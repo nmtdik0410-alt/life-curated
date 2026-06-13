@@ -4,220 +4,200 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIFE CURATED</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:        #f7f4ee;
+  --bg:        #fafafa;
   --surface:   #ffffff;
-  --line:      #e6e0d4;
-  --ink:       #2b2620;
-  --ink-soft:  #8c8174;
-  --ink-faint: #c2b9aa;
+  --line:      #e8e8e8;
+  --line-soft: #f0f0f0;
+  --ink:       #18181b;
+  --ink-soft:  #71717a;
+  --ink-faint: #a1a1aa;
 
-  --c-interior:     #6b7c5e;
-  --c-architecture: #5a6474;
-  --c-cafe:         #c4774a;
-  --c-event:        #7c6b4a;
+  /* category accents - 彩度を抑えたモノトーン寄り */
+  --c-interior:     #52525b;
+  --c-architecture: #71717a;
+  --c-cafe:         #8b6f4e;
+  --c-event:        #8b5a6b;
   --c-gadget:       #4a6b8a;
-  --c-culture:      #9c5a6e;
-
-  --interior-tint:     #eef1ea;
-  --architecture-tint: #eaeced;
-  --cafe-tint:         #faeee4;
-  --event-tint:        #f2ede4;
-  --gadget-tint:       #eaeff4;
-  --culture-tint:      #f5eaed;
+  --c-culture:      #6b5b8a;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: 'Jost', sans-serif;
+  font-family: 'Inter', -apple-system, 'Hiragino Sans', sans-serif;
   background: var(--bg);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-/* ─── TOP BAR ─── */
+/* ============ TOP BAR ============ */
 .topbar {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(247,244,238,.9);
-  backdrop-filter: blur(10px);
+  background: rgba(250,250,250,.9);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
 }
 .topbar-inner {
-  max-width: 1180px; margin: 0 auto;
-  padding: 14px 28px;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  max-width: 1100px; margin: 0 auto;
+  padding: 18px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px;
 }
 .logo {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px; font-weight: 600; letter-spacing: .06em;
-  white-space: nowrap;
+  font-size: 15px; font-weight: 700; letter-spacing: -.01em;
 }
-.logo .dot { color: var(--c-cafe); }
-.topbar-meta {
-  display: flex; align-items: center; gap: 18px;
-  font-size: 11px; color: var(--ink-soft); letter-spacing: .04em;
-}
-.live { display: inline-flex; align-items: center; gap: 6px; }
-.live-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--c-interior);
-  animation: pulse 2.4s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.logo .accent { color: var(--ink-faint); font-weight: 400; }
 
-/* ─── HERO ─── */
-.hero {
-  max-width: 1180px; margin: 0 auto;
-  padding: 60px 28px 40px;
-  display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: end;
+/* ============ CATEGORY NAV ============ */
+.catnav {
+  max-width: 1100px; margin: 0 auto;
+  padding: 14px 28px;
+  display: flex; gap: 6px; flex-wrap: wrap;
   border-bottom: 1px solid var(--line);
 }
-@media(max-width:860px){ .hero{grid-template-columns:1fr;gap:24px;padding:40px 24px 28px} }
-.hero-eyebrow {
-  font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
-  color: var(--c-cafe); font-weight: 600; margin-bottom: 18px;
-}
-.hero h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 300; font-size: clamp(38px, 6.5vw, 72px);
-  line-height: 1.06; letter-spacing: .01em;
-}
-.hero h1 em { font-style: italic; font-weight: 500; color: var(--c-interior); }
-.hero-right { display: flex; flex-direction: column; gap: 14px; }
-.hero-desc {
-  font-size: 13.5px; line-height: 1.95; color: var(--ink-soft); max-width: 460px;
-}
-.hero-stats { display: flex; gap: 0; border-top: 1px solid var(--line); }
-.hero-stat { flex: 1; padding: 14px 0; border-right: 1px solid var(--line); }
-.hero-stat:last-child { border-right: none; }
-.hero-stat .n {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 28px; font-weight: 600; line-height: 1;
-}
-.hero-stat .l {
-  font-size: 10px; color: var(--ink-soft);
-  letter-spacing: .1em; text-transform: uppercase; margin-top: 5px;
-}
-
-/* ─── CATEGORY NAV ─── */
-.catnav {
-  max-width: 1180px; margin: 0 auto;
-  padding: 20px 28px; display: flex; gap: 8px; flex-wrap: wrap;
-}
 .catnav button {
-  font-family: 'Jost', sans-serif;
-  font-size: 12px; font-weight: 500; letter-spacing: .04em;
-  padding: 7px 16px; border-radius: 100px;
-  border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
-  cursor: pointer; transition: all .18s;
-  display: flex; align-items: center; gap: 7px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px; font-weight: 500; letter-spacing: 0;
+  padding: 6px 14px; border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 6px;
 }
-.catnav button .sw { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.catnav button:hover { border-color: var(--ink-faint); color: var(--ink); }
-.catnav button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-.catnav button.active .sw { background: rgba(255,255,255,.7) !important; }
+.catnav button .sw {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.catnav button:hover { background: var(--line-soft); color: var(--ink); }
+.catnav button.active {
+  background: var(--ink); color: #fff;
+}
+.catnav button.active .sw { background: #fff !important; }
 
-/* ─── FEED ─── */
-.feed { max-width: 1180px; margin: 0 auto; padding: 0 28px 80px; }
-.cat-section { margin-bottom: 52px; }
+/* ============ FEED SECTIONS ============ */
+.feed { max-width: 1100px; margin: 0 auto; padding: 8px 28px 80px; }
+
+.cat-section { margin-top: 36px; }
 .cat-head {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 16px; margin-bottom: 16px;
-  padding-bottom: 11px; border-bottom: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 14px;
 }
-.cat-head .left { display: flex; align-items: baseline; gap: 14px; }
+.cat-head .left { display: flex; align-items: center; gap: 10px; }
+.cat-head .sw {
+  width: 8px; height: 8px; border-radius: 50%;
+}
 .cat-head h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 26px; font-weight: 500; letter-spacing: .02em;
+  font-size: 15px; font-weight: 600; letter-spacing: -.01em;
 }
-.cat-head .en {
+.cat-head .count {
+  font-size: 12px; color: var(--ink-faint);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; color: var(--ink-faint);
-  letter-spacing: .12em; text-transform: uppercase;
 }
-.cat-head .count { font-size: 11px; color: var(--ink-soft); }
 
-/* ─── CARDS GRID ─── */
 .cards {
-  display: grid; grid-template-columns: repeat(3,1fr);
-  gap: 1px; background: var(--line); border: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
 }
-@media(max-width:860px){ .cards{grid-template-columns:repeat(2,1fr)} }
-@media(max-width:540px){ .cards{grid-template-columns:1fr} }
+@media (max-width: 860px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .cards { grid-template-columns: 1fr; }
+}
 
 .card {
   background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
   display: flex; flex-direction: column;
   text-decoration: none; color: var(--ink);
-  transition: background .15s;
-  position: relative; overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
 }
-.card:hover { background: var(--tint, var(--bg)); }
-
+.card:hover {
+  border-color: var(--ink-faint);
+  box-shadow: 0 2px 12px rgba(0,0,0,.04);
+}
 .card-thumb {
-  width: 100%; height: 160px;
-  object-fit: cover; display: block;
-  background: var(--line);
+  width: 100%; aspect-ratio: 16/10;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+.card-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block;
+}
+.card-body {
+  padding: 14px 16px 16px;
+  display: flex; flex-direction: column; flex-grow: 1;
+  gap: 8px;
+}
+.card .meta-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.card .cat-dot {
+  width: 6px; height: 6px; border-radius: 50%;
   flex-shrink: 0;
 }
-.card-body { padding: 20px 20px 18px; display: flex; flex-direction: column; flex: 1; }
-
-.card .src-row {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px;
-}
 .card .src {
-  font-size: 10px; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--accent, var(--ink-soft));
-}
-.card .date {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9.5px; color: var(--ink-faint);
+  font-size: 11px; font-weight: 500;
+  color: var(--ink-faint);
 }
 .card .title {
-  font-size: 14px; font-weight: 500; line-height: 1.65;
-  margin-bottom: 9px; flex-grow: 1;
+  font-size: 13.5px; font-weight: 500; line-height: 1.55;
+  letter-spacing: -.005em;
+  flex-grow: 1;
 }
 .card .excerpt {
-  font-size: 12px; line-height: 1.8; color: var(--ink-soft);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 12px; line-height: 1.7; color: var(--ink-soft);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.card .arrow {
-  margin-top: 14px; font-size: 10.5px; letter-spacing: .09em;
-  color: var(--accent, var(--ink-soft));
-  display: flex; align-items: center; gap: 5px;
-  opacity: 0; transform: translateX(-4px); transition: all .18s;
-}
-.card:hover .arrow { opacity: 1; transform: translateX(0); }
-.card::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: var(--accent, transparent);
-  transform: scaleY(0); transform-origin: top; transition: transform .18s;
-}
-.card:hover::before { transform: scaleY(1); }
 
-/* ─── STATES ─── */
-.loading-msg, .empty {
-  grid-column: 1/-1; padding: 48px 22px; text-align: center;
-  color: var(--ink-faint); font-size: 13px; background: var(--surface);
-}
-.loading-msg { animation: fadeIn .4s; }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-/* ─── FOOTER ─── */
+/* ============ FOOTER ============ */
 footer {
   border-top: 1px solid var(--line);
-  padding: 32px 28px;
-  max-width: 1180px; margin: 0 auto;
+  padding: 28px 28px;
+  max-width: 1100px; margin: 0 auto;
   display: flex; justify-content: space-between; align-items: center;
   flex-wrap: wrap; gap: 12px;
-  font-size: 11px; color: var(--ink-faint); letter-spacing: .04em;
+  font-size: 11.5px; color: var(--ink-faint);
 }
-footer .fmark {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 16px; font-weight: 600; color: var(--ink-soft);
+
+/* ============ EMPTY ============ */
+.empty {
+  grid-column: 1 / -1;
+  padding: 32px 16px; text-align: center;
+  color: var(--ink-faint); font-size: 12.5px;
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px;
+}
+
+/* ============ CSV LOADER ============ */
+.loader-bar {
+  max-width: 1100px; margin: 0 auto;
+  padding: 14px 28px 0;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.loader-bar input[type="file"] {
+  font-size: 11px; color: var(--ink-soft);
+  max-width: 200px;
+}
+.loader-bar button {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  padding: 6px 16px; border-radius: 6px; border: 1px solid var(--ink);
+  background: var(--ink); color: #fff; cursor: pointer;
+}
+.loader-bar button:hover { background: #333; }
+.loader-bar .status {
+  font-size: 11.5px; color: var(--ink-faint);
 }
 </style>
 </head>
@@ -225,232 +205,158 @@ footer .fmark {
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="logo">LIFE<span class="dot"> ・</span>CURATED</div>
-    <div class="topbar-meta">
-      <span class="live"><span class="live-dot"></span><span id="updated-date">Loading…</span></span>
-      <span id="total-count">—</span>
-    </div>
-  </div>
-</div>
-
-<div class="hero">
-  <div>
-    <div class="hero-eyebrow">Lifestyle News, Curated</div>
-    <h1>感度の高い<br><em>暮らし</em>のニュースを、<br>ひとつの場所で。</h1>
-  </div>
-  <div class="hero-right">
-    <p class="hero-desc">
-      Casa BRUTUS、Hanako、WIRED Japan、美術手帖など12のメディアから、
-      インテリア・建築・カフェ・イベント・ガジェット・カルチャーの
-      最新記事を毎朝9時に自動集約。気になる記事は元のメディアへ。
-    </p>
-    <div class="hero-stats">
-      <div class="hero-stat"><div class="n" id="stat-articles">—</div><div class="l">Articles</div></div>
-      <div class="hero-stat"><div class="n">12</div><div class="l">Sources</div></div>
-      <div class="hero-stat"><div class="n">6</div><div class="l">Categories</div></div>
-    </div>
+    <div class="logo">LIFE CURATED<span class="accent"> / lifestyle feed</span></div>
   </div>
 </div>
 
 <div class="catnav" id="catnav">
-  <button class="active" data-cat="all">
-    <span class="sw" style="background:var(--ink)"></span>すべて
-  </button>
-  <button data-cat="interior">
-    <span class="sw" style="background:var(--c-interior)"></span>インテリア
-  </button>
-  <button data-cat="architecture">
-    <span class="sw" style="background:var(--c-architecture)"></span>建築
-  </button>
-  <button data-cat="cafe">
-    <span class="sw" style="background:var(--c-cafe)"></span>カフェ・スポット
-  </button>
-  <button data-cat="event">
-    <span class="sw" style="background:var(--c-event)"></span>イベント
-  </button>
-  <button data-cat="gadget">
-    <span class="sw" style="background:var(--c-gadget)"></span>ガジェット・プロダクト
-  </button>
-  <button data-cat="culture">
-    <span class="sw" style="background:var(--c-culture)"></span>カルチャー・アート
-  </button>
+  <button class="active" data-cat="all"><span class="sw" style="background:var(--ink)"></span>すべて</button>
+  <button data-cat="interior"><span class="sw" style="background:var(--c-interior)"></span>インテリア</button>
+  <button data-cat="architecture"><span class="sw" style="background:var(--c-architecture)"></span>建築</button>
+  <button data-cat="cafe"><span class="sw" style="background:var(--c-cafe)"></span>カフェ・スポット</button>
+  <button data-cat="event"><span class="sw" style="background:var(--c-event)"></span>イベント</button>
+  <button data-cat="gadget"><span class="sw" style="background:var(--c-gadget)"></span>ガジェット・プロダクト</button>
+  <button data-cat="culture"><span class="sw" style="background:var(--c-culture)"></span>カルチャー・アート</button>
 </div>
 
-<div class="feed" id="feed">
-  <div style="padding:64px 0;text-align:center;color:var(--ink-faint);font-size:13px;">
-    記事を読み込んでいます…
-  </div>
+<!-- CSV読み込み -->
+<div class="loader-bar">
+  <input type="file" id="csv-input" accept=".csv">
+  <button id="csv-load-btn">CSVを読み込む</button>
+  <span class="status" id="csv-status"></span>
 </div>
+
+<div class="feed" id="feed"></div>
 
 <footer>
-  <div class="fmark">LIFE CURATED</div>
-  <div>Powered by GitHub Actions — 毎朝 9:00 JST 自動更新</div>
+  <div>LIFE CURATED</div>
+  <div>Prototype v0.2</div>
 </footer>
 
 <script>
-// ─── カテゴリ定義 ───────────────────────────────────────────────────────────
+// ============ カテゴリ定義 ============
 const CATS = {
-  interior: {
-    label: 'インテリア', en: 'INTERIOR & DESIGN',
-    accent: 'var(--c-interior)', tint: 'var(--interior-tint)',
-    sources: ['Casa BRUTUS Web', 'Elle Decor Japan'],
-  },
-  architecture: {
-    label: '建築', en: 'ARCHITECTURE',
-    accent: 'var(--c-architecture)', tint: 'var(--architecture-tint)',
-    sources: ['AXIS Web'],
-  },
-  cafe: {
-    label: 'カフェ・スポット', en: 'CAFE & SPOTS',
-    accent: 'var(--c-cafe)', tint: 'var(--cafe-tint)',
-    sources: ['Hanako Web', '&Premium Web'],
-  },
-  event: {
-    label: 'イベント', en: 'EVENTS',
-    accent: 'var(--c-event)', tint: 'var(--event-tint)',
-    sources: ['POPEYE Web', 'Time Out Tokyo'],
-  },
-  gadget: {
-    label: 'ガジェット・プロダクト', en: 'GADGET & PRODUCT',
-    accent: 'var(--c-gadget)', tint: 'var(--gadget-tint)',
-    sources: ['Pen Online', 'WIRED Japan', 'ギズモード・ジャパン'],
-  },
-  culture: {
-    label: 'カルチャー・アート', en: 'CULTURE & ART',
-    accent: 'var(--c-culture)', tint: 'var(--culture-tint)',
-    sources: ['BRUTUS.jp', '美術手帖'],
-  },
+  interior:     { label: 'インテリア',           accent: 'var(--c-interior)' },
+  architecture: { label: '建築',                 accent: 'var(--c-architecture)' },
+  cafe:         { label: 'カフェ・スポット',     accent: 'var(--c-cafe)' },
+  event:        { label: 'イベント',             accent: 'var(--c-event)' },
+  gadget:       { label: 'ガジェット・プロダクト', accent: 'var(--c-gadget)' },
+  culture:      { label: 'カルチャー・アート',   accent: 'var(--c-culture)' },
 };
 
-// CSV category 列 → キー
-const CAT_MAP = {
-  'インテリア':             'interior',
-  '建築':                   'architecture',
-  'カフェ・スポット':       'cafe',
-  'イベント':               'event',
+// CSVのcategory列（日本語ラベル）→ 内部キーへの変換（デフォルト/フォールバック用）
+const CATEGORY_LABEL_TO_KEY = {
+  'インテリア': 'interior',
+  '建築': 'architecture',
+  'カフェ・スポット': 'cafe',
+  'イベント': 'event',
   'ガジェット・プロダクト': 'gadget',
-  'カルチャー・アート':     'culture',
+  'カルチャー・アート': 'culture',
 };
 
-function detectCategory(catStr, sourceStr) {
-  if (catStr && CAT_MAP[catStr]) return CAT_MAP[catStr];
-  for (const [key, cfg] of Object.entries(CATS)) {
-    if (cfg.sources.some(s => (sourceStr || '').includes(s) || s.includes(sourceStr || ''))) return key;
-  }
-  return 'interior';
-}
+// ============ キーワードベースの再分類 ============
+// タイトル・概要の内容を優先的に見て、メディア単位の固定分類を上書きする。
+// 上から順にチェックし、最初にマッチしたカテゴリを採用する。
+const KEYWORD_RULES = [
+  { cat: 'event',        keywords: ['展', 'フェア', 'デザインウィーク', 'サローネ', 'まとめ！', 'イベント', 'ライブ', '開催', 'セール', 'キャンペーン', '週末'] },
+  { cat: 'culture',      keywords: ['美術', 'アート', 'ギャラリー', '作家', 'アーティスト', '個展', '美術館', '映画', '音楽', 'カルチャー', '書籍', '出版', '写真集'] },
+  { cat: 'architecture', keywords: ['建築', '建物', '邸宅', '住宅', 'house', 'リノベーション', 'リフォーム', '設計', '建築家', 'パビリオン'] },
+  { cat: 'cafe',         keywords: ['カフェ', 'コーヒー', 'レストラン', 'ホテル', 'ショップ', '店', 'スポット', '訪れたい', 'グルメ', 'フード', 'メニュー'] },
+  { cat: 'gadget',       keywords: ['ガジェット', '掃除機', '家電', 'プロダクト', 'デバイス', 'スマート', 'アプリ', 'テック', 'AI'] },
+  { cat: 'interior',     keywords: ['インテリア', '家具', '雑貨', 'チェア', 'ソファ', 'テーブル', '照明', 'ルームツアー', '部屋', '収納', 'デザイン'] },
+];
 
-function formatDate(str) {
-  if (!str) return '';
-  const m = str.match(/\d{4}-(\d{2})-(\d{2})/);
-  return m ? `${m[1]}.${m[2]}` : str.slice(0, 10);
-}
-
-function esc(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ─── CSV パーサ ──────────────────────────────────────────────────────────────
-function splitRow(line) {
-  const cells = [];
-  let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
-      else inQ = !inQ;
-    } else if (ch === ',' && !inQ) {
-      cells.push(cur); cur = '';
-    } else {
-      cur += ch;
+function reclassify(title, excerpt, fallbackCat) {
+  const text = `${title} ${excerpt}`;
+  for (const rule of KEYWORD_RULES) {
+    if (rule.keywords.some(kw => text.includes(kw))) {
+      return rule.cat;
     }
   }
-  cells.push(cur);
-  return cells;
+  return fallbackCat;
 }
 
-function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) return [];
-  const headers = splitRow(lines[0]).map(h => h.replace(/^﻿/, '').trim());
-  return lines.slice(1).map(line => {
-    const cells = splitRow(line);
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = (cells[i] || '').trim(); });
-    return obj;
-  }).filter(r => r.title || r.url);
-}
+// ============ サンプルデータ（CSV未読込時のプレースホルダー） ============
+const SAMPLE_DATA = [
+  { source: 'Casa BRUTUS Web', title: 'キノコのパビリオンがメキシコに出現しました！', url: 'https://casabrutus.com/categories/architecture/487163', date: '06.07', excerpt: '芸術家ボスコ・ソディによるアートと建築のキャンパス〈カーサ・ワビ〉に〈マッシュルーム・パビリオン〉が誕生した。', category: 'architecture', thumbnail: '' },
+  { source: 'Casa BRUTUS Web', title: '〈天童木工〉の名作家具がモチーフ。Tシャツを制作。', url: 'https://casabrutus.com/categories/fashion/487560', date: '06.07', excerpt: '〈ALMOSTBLACK〉デザイナー中嶋峻太が長年愛用してきた〈天童木工〉と協業し、Tシャツを制作。', category: 'interior', thumbnail: '' },
+  { source: 'Elle Decor Japan', title: '世界のエル・デコが厳選した「A-LIST」発表！', url: 'https://www.elle.com/jp/decor/decor-interior-design/g71343987/elle-decor-a-list-2606/', date: '06.06', excerpt: '世界中のデザインシーンから選ばれた、注目のクリエイターとプロダクトをまとめて紹介。', category: 'interior', thumbnail: '' },
+  { source: 'AXIS Web', title: '工場は、ものを生み出すだけの場所か。「ITOKI DESIGN HOUSE SHIGA」', url: 'https://www.axismag.jp/posts/2026/06/710072.html', date: '06.01', excerpt: '生産拠点は、単にものをつくる場所にとどまるのか。それとも価値を伝える場へと変わりうるのか。', category: 'architecture', thumbnail: '' },
+  { source: 'Hanako Web', title: '花とグリーンに癒やされる、都内近郊の最旬スポット7', url: 'https://www.elle.com/jp/decor/decor-interior-design/g71428092/', date: '06.06', excerpt: '緑とともに過ごす時間を求める人へ。都心からアクセスしやすい、植物に包まれたスポットをセレクト。', category: 'cafe', thumbnail: '' },
+  { source: '&Premium Web', title: '憧れホテル＆カフェに学ぶ、センスのいい部屋をつくる建材リスト', url: 'https://www.elle.com/jp/decor/decor-interior-design/g71275639/', date: '06.05', excerpt: '空間の印象を決めるのは、実は素材選び。プロが選ぶ建材から、部屋づくりのヒントを探る。', category: 'cafe', thumbnail: '' },
+  { source: 'POPEYE Web', title: '【ルームツアー】1950年代の平屋をキャンバスに。', url: 'https://www.elle.com/jp/decor/decor-interior-design/g60749992/', date: '06.05', excerpt: 'テラコッタとブルーが響き合う、感性で選び抜かれた邸宅をめぐる。', category: 'interior', thumbnail: '' },
+  { source: 'Pen Online', title: 'ミラノデザインウィーク2026 フォーリサローネ・レポート（後編）', url: 'https://www.axismag.jp/posts/2026/05/711803.html', date: '05.26', excerpt: 'サローネ本会場とは異なり、街そのものを舞台に多様な企業・デザイナーが表現を試みる。', category: 'event', thumbnail: '' },
+  { source: 'WIRED Japan', title: '「シャーク」が圧倒的な吸引力を誇るパワーコードレス掃除機の新モデルを発売', url: 'https://www.elle.com/jp/decor/decor-interior-design/g71416657/', date: '05.28', excerpt: '日々の暮らしを支えるプロダクトの新しい選択肢。気になるスペックをチェック。', category: 'gadget', thumbnail: '' },
+  { source: 'ギズモード・ジャパン', title: 'QOLを底上げする、いますぐ買いたいデザインのいい日用品10', url: 'https://www.elle.com/jp/decor/decor-interior-design/g70613546/', date: '06.03', excerpt: '見た目も使い心地も妥協しない。毎日の生活の質を上げる、デザインプロダクトを厳選。', category: 'gadget', thumbnail: '' },
+  { source: 'BRUTUS.jp', title: '長山智美 デザイン狩人｜〈モルテーニ〉のジオ・ポンティ オブジェ コレクション', url: 'https://casabrutus.com/categories/design/487250', date: '06.05', excerpt: 'デザインへの深い造詣と審美眼を持つインテリアスタイリストが、今気になるものを紹介する連載。', category: 'culture', thumbnail: '' },
+  { source: '美術手帖', title: '坂 茂の40年を総覧する。『坂 茂の建築』TOTO出版から', url: 'https://www.axismag.jp/posts/2026/05/710917.html', date: '05.26', excerpt: '建築家・坂茂による40年にわたる実践と災害支援活動を総覧する一冊が刊行。', category: 'culture', thumbnail: '' },
+];
 
-// ─── レンダリング ────────────────────────────────────────────────────────────
-let allData = [];
+let allData = [...SAMPLE_DATA];
 let currentFilter = 'all';
 
+// ============ レンダリング ============
 function render() {
   const feed = document.getElementById('feed');
   feed.innerHTML = '';
 
-  const keys = currentFilter === 'all' ? Object.keys(CATS) : [currentFilter];
+  const cats = currentFilter === 'all' ? Object.keys(CATS) : [currentFilter];
 
-  keys.forEach(key => {
-    const cfg = CATS[key];
-    const items = allData.filter(d => d.category === key);
-    if (items.length === 0) return;
+  cats.forEach(catKey => {
+    const cfg = CATS[catKey];
+    const items = allData.filter(d => d.category === catKey);
+    if (currentFilter === 'all' && items.length === 0) return; // 「すべて」表示時は空カテゴリを省略
 
-    const sec = document.createElement('div');
-    sec.className = 'cat-section';
-    sec.innerHTML = `
-      <div class="cat-head">
-        <div class="left">
-          <h2 style="color:${cfg.accent}">${cfg.label}</h2>
-          <span class="en">${cfg.en}</span>
-        </div>
-        <span class="count">${items.length} articles</span>
+    const section = document.createElement('div');
+    section.className = 'cat-section';
+
+    const head = document.createElement('div');
+    head.className = 'cat-head';
+    head.innerHTML = `
+      <div class="left">
+        <span class="sw" style="background:${cfg.accent}"></span>
+        <h2>${cfg.label}</h2>
       </div>
-      <div class="cards" id="c-${key}"></div>
+      <span class="count">${items.length}</span>
     `;
-    feed.appendChild(sec);
+    section.appendChild(head);
 
-    const grid = document.getElementById(`c-${key}`);
-    items.forEach(item => {
-      const a = document.createElement('a');
-      a.className = 'card';
-      a.href = item.url || '#';
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.style.setProperty('--accent', cfg.accent);
-      a.style.setProperty('--tint', cfg.tint);
+    const cardsWrap = document.createElement('div');
+    cardsWrap.className = 'cards';
 
-      const thumbHtml = item.thumbnail
-        ? `<img class="card-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">`
-        : '';
-
-      a.innerHTML = `
-        ${thumbHtml}
-        <div class="card-body">
-          <div class="src-row">
-            <span class="src">${esc(item.source)}</span>
-            <span class="date">${esc(item.date)}</span>
+    if (items.length === 0) {
+      cardsWrap.innerHTML = `<div class="empty">記事がありません</div>`;
+    } else {
+      items.forEach(item => {
+        const a = document.createElement('a');
+        a.className = 'card';
+        a.href = item.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        const thumbHtml = item.thumbnail
+          ? `<div class="card-thumb"><img src="${item.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.remove()"></div>`
+          : '';
+        a.innerHTML = `
+          ${thumbHtml}
+          <div class="card-body">
+            <div class="meta-row">
+              <span class="cat-dot" style="background:${cfg.accent}"></span>
+              <span class="src">${item.source}</span>
+            </div>
+            <div class="title">${item.title}</div>
+            <div class="excerpt">${item.excerpt || ''}</div>
           </div>
-          <div class="title">${esc(item.title)}</div>
-          <div class="excerpt">${esc(item.excerpt)}</div>
-          <div class="arrow">READ MORE →</div>
-        </div>
-      `;
-      grid.appendChild(a);
-    });
+        `;
+        cardsWrap.appendChild(a);
+      });
+    }
+
+    section.appendChild(cardsWrap);
+    feed.appendChild(section);
   });
-
-  if (feed.children.length === 0) {
-    feed.innerHTML = `<p style="padding:64px 0;text-align:center;color:var(--ink-faint);font-size:13px;">
-      表示できる記事がありません。
-    </p>`;
-  }
-
-  document.getElementById('total-count').textContent = `${allData.length} articles`;
-  document.getElementById('stat-articles').textContent = allData.length;
 }
 
-// ─── カテゴリナビ ────────────────────────────────────────────────────────────
+// ============ カテゴリナビ ============
 document.querySelectorAll('#catnav button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#catnav button').forEach(b => b.classList.remove('active'));
@@ -460,48 +366,88 @@ document.querySelectorAll('#catnav button').forEach(btn => {
   });
 });
 
-// ─── CSV 自動読み込み（fetch） ───────────────────────────────────────────────
-async function loadCSV() {
-  try {
-    const res = await fetch('life_curated_feed.csv');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    const rows = parseCSV(text);
-    if (rows.length === 0) throw new Error('no data');
-
-    allData = rows.map(r => ({
-      source:    r.source    || '',
-      title:     r.title     || '',
-      url:       r.url       || '#',
-      date:      formatDate(r.date || ''),
-      excerpt:   r.excerpt   || '',
-      category:  detectCategory(r.category || '', r.source || ''),
-      thumbnail: r.thumbnail || '',
-    }));
-
-    // 最新日付をトップバーに表示
-    const latestDate = rows.map(r => r.date).filter(Boolean).sort().reverse()[0];
-    if (latestDate) {
-      const m = latestDate.match(/\d{4}-(\d{2})-(\d{2})/);
-      document.getElementById('updated-date').textContent =
-        m ? `Updated ${m[1]}.${m[2]}` : `Updated ${latestDate.slice(5,10)}`;
-    } else {
-      document.getElementById('updated-date').textContent = 'Updated';
+// ============ CSVパーサ ============
+function parseCSV(text) {
+  text = text.replace(/^\ufeff/, '');
+  const lines = text.split('\n').filter(l => l.trim());
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^\ufeff/, ''));
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row = [];
+    let cur = '', inQuotes = false;
+    for (const ch of lines[i]) {
+      if (ch === '"') { inQuotes = !inQuotes; continue; }
+      if (ch === ',' && !inQuotes) { row.push(cur); cur = ''; continue; }
+      cur += ch;
     }
-
-    render();
-  } catch (err) {
-    console.warn('[LIFE CURATED] CSV読み込みエラー:', err.message);
-    document.getElementById('updated-date').textContent = 'CSV未読込';
-    document.getElementById('feed').innerHTML = `
-      <p style="padding:64px 28px;text-align:center;color:var(--ink-faint);font-size:13px;line-height:2;">
-        life_curated_feed.csv の読み込みに失敗しました。<br>
-        GitHub Pages 環境、または <code>python -m http.server</code> でローカルサーバーを起動してご覧ください。
-      </p>`;
+    row.push(cur);
+    if (row.length >= headers.length) {
+      const obj = {};
+      headers.forEach((h, idx) => obj[h] = (row[idx] || '').trim());
+      rows.push(obj);
+    }
   }
+  return rows;
 }
 
-loadCSV();
+// ============ CSV読み込み ============
+document.getElementById('csv-load-btn').addEventListener('click', () => {
+  const fileInput = document.getElementById('csv-input');
+  const status = document.getElementById('csv-status');
+  const file = fileInput.files[0];
+  if (!file) {
+    status.textContent = 'ファイルを選択してください';
+    status.style.color = '#b5536b';
+    return;
+  }
+  status.textContent = '読み込み中...';
+  status.style.color = 'var(--ink-faint)';
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const rows = parseCSV(ev.target.result);
+      allData = rows.map(r => {
+        const catLabel = r.category || r['カテゴリ'] || '';
+        const fallbackCat = CATEGORY_LABEL_TO_KEY[catLabel] || 'interior';
+        const title = r.title || r['タイトル'] || '';
+        const excerpt = r.excerpt || r['概要'] || '';
+        const catKey = reclassify(title, excerpt, fallbackCat);
+        const rawDate = r.date || r['日付'] || '';
+        return {
+          source: r.source || r['メディア名'] || '',
+          title,
+          url: r.url || r['URL'] || '#',
+          date: rawDate.length >= 10 ? rawDate.slice(5, 10).replace('-', '.') : rawDate,
+          excerpt,
+          category: catKey,
+          thumbnail: r.thumbnail || r['サムネイル'] || '',
+        };
+      }).filter(d => d.title);
+
+      if (allData.length === 0) {
+        status.textContent = '記事が0件でした';
+        status.style.color = '#b5536b';
+        return;
+      }
+      render();
+      status.textContent = `${allData.length}件を読み込みました`;
+      status.style.color = 'var(--c-interior)';
+    } catch (err) {
+      status.textContent = '読み込みエラー: ' + err.message;
+      status.style.color = '#b5536b';
+    }
+  };
+  reader.onerror = () => {
+    status.textContent = 'ファイルの読み込みに失敗しました';
+    status.style.color = '#b5536b';
+  };
+  reader.readAsText(file, 'UTF-8');
+});
+
+// 初回は既存データもキーワード再分類を適用
+allData = allData.map(d => ({ ...d, category: reclassify(d.title, d.excerpt, d.category) }));
+render();
 </script>
 </body>
 </html>
