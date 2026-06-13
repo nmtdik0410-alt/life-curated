@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+life_curated_errors.txt

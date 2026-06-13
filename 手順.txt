@@ -1,0 +1,110 @@
+================================================================
+  LIFE CURATED — GitHub Pages 公開手順
+================================================================
+
+【前提】
+・GitHub アカウントを持っていること
+・Git がインストールされていること（Mac はターミナルで `git --version` で確認）
+・インストールされていない場合: https://git-scm.com/download/mac
+
+----------------------------------------------------------------
+STEP 1  GitHubにリポジトリを作成する
+----------------------------------------------------------------
+
+1. https://github.com にログイン
+2. 右上の「+」→「New repository」をクリック
+3. 以下を設定:
+   - Repository name: life-curated
+   - Visibility: Public（GitHub Pages 無料利用に必要）
+   - README, .gitignore, license はすべて「None」のまま
+4. 「Create repository」をクリック
+5. 表示された HTTPS の URL をコピーしておく
+   例: https://github.com/あなたのユーザー名/life-curated.git
+
+----------------------------------------------------------------
+STEP 2  ローカルでGitを初期化してプッシュ
+----------------------------------------------------------------
+
+ターミナルを開き、以下を順番に実行:
+
+  cd ~/Desktop/life-curated
+
+  git init
+  git add .
+  git commit -m "first commit: LIFE CURATED 初回リリース"
+
+  # STEP1でコピーしたURLに差し替えてください ↓
+  git remote add origin https://github.com/あなたのユーザー名/life-curated.git
+
+  git branch -M main
+  git push -u origin main
+
+→ GitHub のユーザー名とパスワード（またはPersonal Access Token）を求められたら入力
+
+----------------------------------------------------------------
+STEP 3  GitHub Pages を有効化する
+----------------------------------------------------------------
+
+1. GitHubのリポジトリページを開く
+2. 上部タブ「Settings」→ 左メニュー「Pages」をクリック
+3. 「Branch」を「main」に設定し、フォルダを「/ (root)」に設定
+4. 「Save」をクリック
+5. 1〜2分後にページURL が表示される:
+   https://あなたのユーザー名.github.io/life-curated/
+
+----------------------------------------------------------------
+STEP 4  自動更新（GitHub Actions）の確認
+----------------------------------------------------------------
+
+・リポジトリの「Actions」タブを開く
+・「Update Feed」ワークフローが表示されていれば設定完了
+・毎日9:00（JST）に自動でスクレイピング → CSV更新 → コミット
+・手動実行: Actions → 「Update Feed」→「Run workflow」
+
+----------------------------------------------------------------
+STEP 5  ローカルでの確認方法（オプション）
+----------------------------------------------------------------
+
+fetch() は file:// では動作しないため、ローカルサーバーが必要:
+
+  cd ~/Desktop/life-curated
+  python3 -m http.server 8000
+
+→ ブラウザで http://localhost:8000 を開く
+
+----------------------------------------------------------------
+【ファイル構成】
+----------------------------------------------------------------
+
+life-curated/
+├── index.html              メインページ（GitHub Pages で表示）
+├── scraper.py              記事収集スクリプト
+├── life_curated_feed.csv   収集済み記事データ
+├── life_curated_errors.txt エラーログ（スクレイピング後に生成）
+├── .github/
+│   └── workflows/
+│       └── update.yml      GitHub Actions 自動更新設定
+└── 手順.txt                この手順書
+
+----------------------------------------------------------------
+【トラブルシューティング】
+----------------------------------------------------------------
+
+Q. GitHub Pages が表示されない
+→ Settings → Pages → ブランチが「main」になっているか確認
+→ 公開まで最大5分かかる場合あります
+
+Q. Actions が動かない
+→ Settings → Actions → General → 「Allow all actions」を選択
+
+Q. CSV は更新されているがサイトに反映されない
+→ ブラウザのキャッシュをクリア（Cmd+Shift+R）
+
+Q. パスワードでpushできない
+→ GitHub は2021年よりパスワード認証を廃止。
+  Personal Access Token を使用:
+  GitHub → Settings → Developer settings → Personal access tokens
+  → 「repo」スコープにチェックしてトークンを生成
+  → パスワード欄にトークンを貼り付け
+
+================================================================
