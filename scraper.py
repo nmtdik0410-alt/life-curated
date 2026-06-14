@@ -73,8 +73,7 @@ MEDIA_LIST = [
         'base_url': 'https://www.elle.com/jp/decor/',
         'rss_urls': [
             'https://www.elle.com/jp/decor/feed/',
-            'https://www.elle.com/jp/feed/',
-            'https://www.elle.com/jp/rss/',
+            'https://www.elle.com/jp/decor/rss/',
         ],
         'article_selectors': [
             {'tag': 'article', 'class_re': r''},
