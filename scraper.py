@@ -506,9 +506,27 @@ def fetch_html_page(media, page_url, base_host, seen):
 
 # ─── メイン処理 ──────────────────────────────────────────────────────────────
 
+MAX_STORED  = 1000   # CSVに保持する最大記事数
+FIELDNAMES  = ['category', 'source', 'title', 'url', 'excerpt', 'date', 'thumbnail']
+
+
+def load_existing_csv():
+    """既存CSVを読み込んでリストで返す。ファイルがなければ空リストを返す。"""
+    if not os.path.exists(OUTPUT_CSV):
+        return []
+    articles = []
+    try:
+        with open(OUTPUT_CSV, newline='', encoding='utf-8-sig') as f:
+            for row in csv.DictReader(f):
+                articles.append(dict(row))
+    except Exception as e:
+        print(f'  ⚠ 既存CSV読み込みエラー: {e}')
+    return articles
+
+
 def main():
-    errors       = []
-    all_articles = []
+    errors      = []
+    new_fetched = []
 
     print('=' * 60)
     print('  LIFE CURATED scraper.py  記事収集開始')
@@ -516,6 +534,12 @@ def main():
     print(f'  出力: {OUTPUT_CSV}')
     print('=' * 60)
 
+    # ── 既存CSV読み込み ───────────────────────────────────────────
+    existing   = load_existing_csv()
+    exist_urls = {a['url'] for a in existing}
+    print(f'\n既存件数: {len(existing)} 件')
+
+    # ── 各媒体から新着取得 ────────────────────────────────────────
     for media in MEDIA_LIST:
         source = media['source']
         print(f'\n[{source}] ({media["category"]}) 取得中...')
@@ -543,7 +567,7 @@ def main():
             errors.append(msg)
             continue
 
-        # require_japanese フラグが立っている媒体は日本語文字を含まないタイトルを除外
+        # require_japanese フラグが立っている媒体は日本語タイトル以外を除外
         if media.get('require_japanese'):
             before   = len(articles)
             articles = [a for a in articles if has_japanese_chars(a['title'])]
@@ -557,20 +581,46 @@ def main():
                 article['thumbnail'] = get_ogp_image(article['url'])
             status = '✓' if article.get('thumbnail') else '–'
             print(f'    [{status}] {article["title"][:45]}')
-            all_articles.append(article)
+            new_fetched.append(article)
 
-    fieldnames = ['category', 'source', 'title', 'url', 'excerpt', 'date', 'thumbnail']
+    # ── 重複排除・マージ・ソート・上限カット ───────────────────────
+    added   = 0
+    skipped = 0
+    for article in new_fetched:
+        url = article.get('url', '')
+        if not url or url in exist_urls:
+            skipped += 1
+            continue
+        existing.append(article)
+        exist_urls.add(url)
+        added += 1
+
+    # 日付の新しい順にソート（日付なし記事は末尾）
+    existing.sort(key=lambda a: a.get('date') or '', reverse=True)
+
+    # 上限超えを古い方から削除
+    trimmed = 0
+    if len(existing) > MAX_STORED:
+        trimmed   = len(existing) - MAX_STORED
+        existing  = existing[:MAX_STORED]
+
+    # ── CSV書き出し ───────────────────────────────────────────────
     with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8-sig') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction='ignore')
         writer.writeheader()
-        writer.writerows(all_articles)
+        writer.writerows(existing)
 
+    # ── サマリー ─────────────────────────────────────────────────
     print('\n' + '=' * 60)
-    print(f'  完了: {len(all_articles)} 件 → {OUTPUT_CSV}')
+    print(f'  新規追加:     {added} 件')
+    print(f'  重複スキップ: {skipped} 件')
+    if trimmed:
+        print(f'  上限超え削除: {trimmed} 件（上限 {MAX_STORED} 件）')
+    print(f'  合計件数:     {len(existing)} 件 → {OUTPUT_CSV}')
 
     if errors:
         with open(ERROR_LOG, 'w', encoding='utf-8') as f:
-            f.write(f'LIFE CURATED エラーログ\n')
+            f.write('LIFE CURATED エラーログ\n')
             f.write(f'実行日時: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
             f.write('=' * 60 + '\n')
             for err in errors:
@@ -580,7 +630,7 @@ def main():
         print('  エラーなし')
 
     print('=' * 60)
-    return all_articles
+    return existing
 
 
 if __name__ == '__main__':
