@@ -385,14 +385,47 @@ def get_ogp_image(url):
     return ''
 
 
+# ─── YouTube ショート判定 ────────────────────────────────────────────────────
+
+_SHORTS_WORD_RE = re.compile(r'\bshorts\b', re.IGNORECASE)   # "shorts"（単独単語）
+
+
+def parse_duration_seconds(iso_duration):
+    """ISO 8601 形式（PT1M30S 等）を秒数に変換する。"""
+    if not iso_duration:
+        return 0
+    m = re.match(r'P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', iso_duration)
+    if not m:
+        return 0
+    days    = int(m.group(1) or 0)
+    hours   = int(m.group(2) or 0)
+    minutes = int(m.group(3) or 0)
+    seconds = int(m.group(4) or 0)
+    return days * 86400 + hours * 3600 + minutes * 60 + seconds
+
+
+def is_short_video(title, url, duration_sec):
+    """ショート動画かどうかを判定する（3条件のいずれかに該当したらTrue）。"""
+    title_l = title.lower()
+    if '#shorts' in title_l or '#short' in title_l:  # ハッシュタグ付き
+        return True
+    if _SHORTS_WORD_RE.search(title):                 # "shorts" 単独単語（# なし）
+        return True
+    if '/shorts/' in url:                             # URL に /shorts/ を含む
+        return True
+    if 0 < duration_sec < 180:                        # 動画長が 3 分未満（YouTube Shorts 最大長）
+        return True
+    return False
+
+
 # ─── YouTube 動画取得 ─────────────────────────────────────────────────────────
 
 def fetch_youtube_channel(channel):
-    """YouTube Data API v3 でチャンネルの最新動画を取得する。"""
+    """YouTube Data API v3 でチャンネルの最新動画を取得する（ショート除外）。"""
     handle = channel['handle']
     name   = channel['name']
 
-    # チャンネルのアップロード再生リストIDを取得
+    # ① チャンネルのアップロード再生リストIDを取得
     resp = requests.get(
         'https://www.googleapis.com/youtube/v3/channels',
         params={
@@ -411,50 +444,121 @@ def fetch_youtube_channel(channel):
 
     wait()
 
-    # アップロード再生リストから最新動画を取得
+    # ② ショート除外後に MAX_YT_VIDEOS 件残るよう多めに取得
+    fetch_count = MAX_YT_VIDEOS * 3
     resp = requests.get(
         'https://www.googleapis.com/youtube/v3/playlistItems',
         params={
             'part':       'snippet',
             'playlistId': uploads_id,
-            'maxResults': MAX_YT_VIDEOS,
+            'maxResults': fetch_count,
             'key':        YOUTUBE_API_KEY,
         },
         headers=HEADERS,
         timeout=10,
     )
     resp.raise_for_status()
+    playlist_items = resp.json().get('items', [])
 
-    articles = []
-    for item in resp.json().get('items', []):
+    # 動画IDと snippet を収集
+    video_ids   = []
+    snippet_map = {}
+    for item in playlist_items:
         snippet  = item['snippet']
         video_id = snippet.get('resourceId', {}).get('videoId', '')
-        if not video_id:
-            continue
+        if video_id:
+            video_ids.append(video_id)
+            snippet_map[video_id] = snippet
 
-        title    = snippet.get('title', '').strip()
-        desc_raw = snippet.get('description', '')
-        excerpt  = desc_raw[:100].replace('\n', ' ').strip()
-        pub_date = snippet.get('publishedAt', '')[:10]   # YYYY-MM-DD
+    if not video_ids:
+        return []
 
-        thumbs = snippet.get('thumbnails', {})
-        thumb  = (
+    wait()
+
+    # ③ videos.list で contentDetails（duration）+ snippet（thumbnails）を一括取得
+    resp = requests.get(
+        'https://www.googleapis.com/youtube/v3/videos',
+        params={
+            'part': 'contentDetails,snippet',
+            'id':   ','.join(video_ids),
+            'key':  YOUTUBE_API_KEY,
+        },
+        headers=HEADERS,
+        timeout=10,
+    )
+    resp.raise_for_status()
+
+    video_info = {}   # video_id -> {'duration_sec', 'portrait', 'thumbnail'}
+    for v in resp.json().get('items', []):
+        vid    = v['id']
+        thumbs = v.get('snippet', {}).get('thumbnails', {})
+
+        # 縦動画判定
+        portrait = False
+        default_t = thumbs.get('default', {})
+        w, h = default_t.get('width', 0), default_t.get('height', 0)
+        if w and h and h > w:
+            portrait = True
+        maxres_url = thumbs.get('maxres', {}).get('url', '')
+        if '-portrait' in maxres_url:
+            portrait = True
+
+        # サムネイル URL（videos.list のほうが高解像度優先）
+        thumb_url = (
             thumbs.get('maxres') or
             thumbs.get('high')   or
             thumbs.get('medium') or
             thumbs.get('default') or {}
-        ).get('url', f'https://img.youtube.com/vi/{video_id}/hqdefault.jpg')
+        ).get('url', f'https://img.youtube.com/vi/{vid}/hqdefault.jpg')
+
+        video_info[vid] = {
+            'duration_sec': parse_duration_seconds(
+                v.get('contentDetails', {}).get('duration', '')
+            ),
+            'portrait':  portrait,
+            'thumbnail': thumb_url,
+        }
+
+    # ④ ショート・縦動画を除外しながら記事化
+    articles          = []
+    skipped_shorts    = 0
+    skipped_portrait  = 0
+    for video_id in video_ids:
+        if len(articles) >= MAX_YT_VIDEOS:
+            break
+
+        info    = video_info.get(video_id, {})
+        snippet = snippet_map[video_id]
+        title   = snippet.get('title', '').strip()
+        url     = f'https://www.youtube.com/watch?v={video_id}'
+
+        if is_short_video(title, url, info.get('duration_sec', 0)):
+            skipped_shorts += 1
+            continue
+
+        if info.get('portrait'):
+            skipped_portrait += 1
+            continue
+
+        desc_raw = snippet.get('description', '')
+        excerpt  = desc_raw[:100].replace('\n', ' ').strip()
+        pub_date = snippet.get('publishedAt', '')[:10]
 
         articles.append({
             'category':    classify_category(title, excerpt),
             'source':      name,
             'source_type': 'YouTube',
             'title':       title,
-            'url':         f'https://www.youtube.com/watch?v={video_id}',
+            'url':         url,
             'excerpt':     excerpt,
             'date':        pub_date,
-            'thumbnail':   thumb,
+            'thumbnail':   info.get('thumbnail', ''),
         })
+
+    if skipped_shorts:
+        print(f'  ショート除外: {skipped_shorts} 件')
+    if skipped_portrait:
+        print(f'  縦動画除外:   {skipped_portrait} 件')
 
     return articles
 
