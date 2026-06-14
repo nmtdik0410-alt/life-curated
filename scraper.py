@@ -13,9 +13,13 @@ import sys
 import os
 
 def install_packages():
-    required = ['requests', 'beautifulsoup4', 'feedparser', 'lxml']
-    for pkg in required:
-        import_name = pkg.replace('-', '_')
+    required = [
+        ('requests', 'requests'),
+        ('beautifulsoup4', 'bs4'),
+        ('feedparser', 'feedparser'),
+        ('lxml', 'lxml'),
+    ]
+    for pkg, import_name in required:
         try:
             __import__(import_name)
         except ImportError:
@@ -48,7 +52,7 @@ HEADERS = {
         'Chrome/124.0.0.0 Safari/537.36'
     ),
     'Accept':          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+    'Accept-Language': 'ja,ja-JP;q=0.9,en;q=0.3',
 }
 
 # ─── 媒体定義 ─────────────────────────────────────────────────────────────────
@@ -139,30 +143,41 @@ MEDIA_LIST = [
     {
         'category': 'イベント',
         'source':   'Time Out Tokyo',
-        'base_url': 'https://www.timeout.com/tokyo',
-        'rss_urls': [
-            'https://www.timeout.com/tokyo/feed/',
-            'https://www.timeout.com/tokyo/rss.xml',
-            'https://www.timeout.com/feed/',
-        ],
+        'base_url': 'https://www.timeout.com/tokyo/ja/',
+        'rss_urls': [],
         'article_selectors': [
             {'tag': 'article', 'class_re': r''},
             {'tag': 'div',     'class_re': r'(article|card|tile|item|post)'},
         ],
+        'require_japanese': True,
     },
     {
         'category': 'ガジェット・プロダクト',
-        'source':   'Pen Online',
-        'base_url': 'https://pen-online.com',
+        'source':   'GetNavi Web',
+        'base_url': 'https://getnavi.jp',
         'rss_urls': [
-            'https://pen-online.com/feed/',
-            'https://pen-online.com/feed',
-            'https://pen-online.com/rss.xml',
+            'https://getnavi.jp/gadgets/feed/',
+            'https://getnavi.jp/feed/',
+            'https://getnavi.jp/feed',
         ],
         'article_selectors': [
             {'tag': 'article', 'class_re': r''},
             {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
         ],
+    },
+    {
+        'category': 'インテリア',
+        'source':   'Casa BRUTUS Design',
+        'base_url': 'https://casabrutus.com',
+        'rss_urls': [
+            'https://casabrutus.com/category/design/feed/',
+            'https://casabrutus.com/feed/?cat=design',
+        ],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+        'url_path_filter': '/categories/design',
     },
     {
         'category': 'ガジェット・プロダクト',
@@ -225,6 +240,14 @@ MEDIA_LIST = [
 
 # ─── ユーティリティ ───────────────────────────────────────────────────────────
 
+JAPANESE_RE = re.compile(r'[\u3040-\u30ff\u3400-\u9fff]')
+
+
+def has_japanese_chars(title):
+    """タイトルに、ひらがな・カタカナ・漢字が1文字以上含まれるか判定する。"""
+    return bool(title and JAPANESE_RE.search(title))
+
+
 def clean_text(text, max_len=200):
     if not text:
         return ''
@@ -268,6 +291,35 @@ def wait():
     time.sleep(DELAY)
 
 
+def normalize_url(url):
+    """URL内のデフォルトポート表記など、CSV上で不要な揺れを整える。"""
+    return url.replace(':443/', '/')
+
+
+def get_meta_content(soup, selectors):
+    for selector in selectors:
+        tag = soup.find('meta', attrs=selector)
+        if tag:
+            content = tag.get('content', '').strip()
+            if content:
+                return content
+    return ''
+
+
+def normalize_date(value):
+    if not value:
+        return ''
+    value = value.strip()
+    try:
+        return datetime.fromisoformat(value.replace('Z', '+00:00')).strftime('%Y-%m-%d')
+    except Exception:
+        pass
+    try:
+        return parsedate_to_datetime(value).strftime('%Y-%m-%d')
+    except Exception:
+        return value[:10] if len(value) >= 10 else value
+
+
 # ─── OGP 画像取得 ────────────────────────────────────────────────────────────
 
 def get_ogp_image(url):
@@ -276,16 +328,11 @@ def get_ogp_image(url):
         resp = requests.get(url, headers=HEADERS, timeout=15, allow_redirects=True)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, 'lxml')
-        for selector in [
+        return get_meta_content(soup, [
             {'property': 'og:image'},
             {'name': 'twitter:image'},
             {'name': 'twitter:image:src'},
-        ]:
-            tag = soup.find('meta', attrs=selector)
-            if tag:
-                content = tag.get('content', '').strip()
-                if content:
-                    return content
+        ])
     except Exception:
         pass
     return ''
@@ -313,6 +360,8 @@ def fetch_via_rss(media):
                 title = clean_text(entry.get('title', ''))
                 if not url or not title:
                     continue
+                if media.get('require_japanese') and not has_japanese_chars(title):
+                    continue
                 articles.append({
                     'category':  media['category'],
                     'source':    media['source'],
@@ -332,22 +381,50 @@ def fetch_via_rss(media):
 # ─── HTML フォールバック ───────────────────────────────────────────────────────
 
 def fetch_via_html(media):
-    wait()
-    resp = requests.get(media['base_url'], headers=HEADERS, timeout=20, allow_redirects=True)
-    resp.raise_for_status()
-    soup = BeautifulSoup(resp.text, 'lxml')
 
+    page_urls = media.get('start_urls') or [media['base_url']]
     seen = set()
     articles = []
     base = media['base_url']
     base_host = urlparse(base).netloc
 
+    for page_url in page_urls:
+        page_articles = fetch_html_page(media, page_url, base_host, seen)
+        articles.extend(page_articles)
+        if len(articles) >= MAX_ARTICLES:
+            break
+    return articles[:MAX_ARTICLES]
+
+
+def fetch_html_page(media, page_url, base_host, seen):
+    wait()
+    resp = requests.get(page_url, headers=HEADERS, timeout=20, allow_redirects=True)
+    resp.raise_for_status()
+    effective_page_url = resp.url
+    # resp.content（バイト列）を渡すことで BeautifulSoup が
+    # <meta charset> を参照して正しいエンコーディングを自動判定する
+    soup = BeautifulSoup(resp.content, 'lxml')
+
+    articles = []
+
+    def normalize_host(host):
+        return host.lower().removeprefix('www.')
+
+    allowed_hosts = {
+        normalize_host(base_host),
+        normalize_host(urlparse(effective_page_url).netloc),
+    }
+
+    url_path_filter = media.get('url_path_filter', '')
+
     def looks_like_article(href):
         parsed = urlparse(href)
-        if parsed.netloc and parsed.netloc != base_host:
+        if parsed.netloc and normalize_host(parsed.netloc) not in allowed_hosts:
             return False
         path = parsed.path
         if not path or path in ('/', '#'):
+            return False
+        if url_path_filter and url_path_filter not in path:
             return False
         if re.search(r'/(article|news|post|topics|column|feature|story|event|blog)/', path, re.I):
             return True
@@ -371,7 +448,7 @@ def fetch_via_html(media):
         if not a_tag:
             continue
         href = a_tag['href'].strip()
-        full_url = urljoin(base, href)
+        full_url = urljoin(effective_page_url, href)
         if full_url in seen or not looks_like_article(full_url):
             continue
         seen.add(full_url)
@@ -381,6 +458,8 @@ def fetch_via_html(media):
                  else a_tag.get_text(strip=True))
         title = clean_text(title)
         if not title or len(title) < 4:
+            continue
+        if media.get('require_japanese') and not has_japanese_chars(title):
             continue
 
         p = container.find('p')
@@ -401,12 +480,14 @@ def fetch_via_html(media):
     if not articles:
         for a_tag in soup.find_all('a', href=True):
             href = a_tag['href'].strip()
-            full_url = urljoin(base, href)
+            full_url = urljoin(effective_page_url, href)
             if full_url in seen or not looks_like_article(full_url):
                 continue
             seen.add(full_url)
             title = clean_text(a_tag.get_text())
             if not title or len(title) < 8:
+                continue
+            if media.get('require_japanese') and not has_japanese_chars(title):
                 continue
             articles.append({
                 'category':  media['category'],
@@ -462,12 +543,20 @@ def main():
             errors.append(msg)
             continue
 
+        # require_japanese フラグが立っている媒体は日本語文字を含まないタイトルを除外
+        if media.get('require_japanese'):
+            before   = len(articles)
+            articles = [a for a in articles if has_japanese_chars(a['title'])]
+            dropped  = before - len(articles)
+            if dropped:
+                print(f'  日本語タイトル以外を除外: {dropped} 件 → 残 {len(articles)} 件')
+
         print('  OGP 画像取得中...')
         for article in articles:
-            if article['url']:
+            if article['url'] and not article.get('thumbnail'):
                 article['thumbnail'] = get_ogp_image(article['url'])
-                status = '✓' if article['thumbnail'] else '–'
-                print(f'    [{status}] {article["title"][:45]}')
+            status = '✓' if article.get('thumbnail') else '–'
+            print(f'    [{status}] {article["title"][:45]}')
             all_articles.append(article)
 
     fieldnames = ['category', 'source', 'title', 'url', 'excerpt', 'date', 'thumbnail']
