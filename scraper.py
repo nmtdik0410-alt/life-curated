@@ -14,10 +14,11 @@ import os
 
 def install_packages():
     required = [
-        ('requests', 'requests'),
-        ('beautifulsoup4', 'bs4'),
-        ('feedparser', 'feedparser'),
-        ('lxml', 'lxml'),
+        ('requests',      'requests'),
+        ('beautifulsoup4','bs4'),
+        ('feedparser',    'feedparser'),
+        ('lxml',          'lxml'),
+        ('python-dotenv', 'dotenv'),
     ]
     for pkg, import_name in required:
         try:
@@ -27,6 +28,9 @@ def install_packages():
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
 
 install_packages()
+
+from dotenv import load_dotenv
+load_dotenv()   # .env があれば環境変数に読み込む（ローカル開発用）
 
 import time
 import csv
@@ -54,6 +58,8 @@ HEADERS = {
     'Accept':          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'ja,ja-JP;q=0.9,en;q=0.3',
 }
+
+YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', '')
 
 # ─── 媒体定義 ─────────────────────────────────────────────────────────────────
 MEDIA_LIST = [
@@ -237,6 +243,24 @@ MEDIA_LIST = [
     },
 ]
 
+# ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
+MAX_YT_VIDEOS = 5
+
+YOUTUBE_CHANNELS = [
+    {'handle': '@Actuskikaku',        'name': 'ACTUS'},
+    {'handle': '@CONNECT-Design',     'name': 'CONNECT北欧'},
+    {'handle': '@TOKYOROOMS',         'name': 'TOKYOROOMS'},
+    {'handle': '@c.uragawa',          'name': 'クリエイティブの裏側'},
+    {'handle': '@hyggescape',         'name': 'HYGGESCAPE'},
+    {'handle': '@y_interior',         'name': 'ゆっくりインテリア(カジマグ)'},
+    {'handle': '@McGuffin2017',       'name': 'McGuffin'},
+    {'handle': '@HOUYHNHNM_OFFICIAL', 'name': 'HOUYHNHNM'},
+    {'handle': '@itm_project',        'name': 'IN THE MAKING'},
+    {'handle': '@kiokutekisansaku',   'name': 'キオク的サンサク'},
+    {'handle': '@GQJapan',            'name': 'GQ JAPAN'},
+    {'handle': '@ellejapan',          'name': 'ELLE Japan'},
+]
+
 
 # ─── ユーティリティ ───────────────────────────────────────────────────────────
 
@@ -320,6 +344,29 @@ def normalize_date(value):
         return value[:10] if len(value) >= 10 else value
 
 
+# ─── カテゴリ自動分類 ─────────────────────────────────────────────────────────
+KEYWORD_RULES_PY = [
+    ('art',      ['美術', 'アート', 'ギャラリー', '個展', '美術館', 'アーティスト', '展覧会', '写真集', 'インスタレーション', '展示']),
+    ('fashion',  ['ファッション', '洋服', 'ブランド', 'コーデ', 'スタイル', 'アパレル', 'ウェア', 'コレクション', 'Tシャツ', 'シューズ', 'スニーカー', 'バッグ', '着こなし']),
+    ('travel',   ['旅行', '海外', '旅先', '観光', '宿', 'ホテル宿泊', '世界', '国', '都市', '街歩き', 'ツーリスト', 'トラベル']),
+    ('event',    ['フェア', 'デザインウィーク', 'サローネ', 'イベント', '開催', 'セール', '週末', 'フェスティバル', 'キャンペーン']),
+    ('food',     ['カフェ', 'コーヒー', 'レストラン', 'グルメ', 'フード', 'メニュー', 'ランチ', 'ディナー', '料理', '食', 'スイーツ', 'ベーカリー', '喫茶']),
+    ('product',  ['ガジェット', '掃除機', '家電', 'プロダクト', 'デバイス', 'スマート', 'アプリ', 'テック', 'AI', '新モデル', '発売', 'ギア', '道具', '車', 'ベンツ', 'メルセデス', '自動車', 'バイク', '自転車', '傘', '雨具', '子供', 'キッズ']),
+    ('culture',  ['カルチャー', '映画', '音楽', '書籍', '出版', '写真', '文化', 'マンガ', 'ゲーム', 'ポップ', '作品', '読書', '宇宙', 'テレビ', '放送', 'デジタル', 'テクノロジー']),
+    ('interior', ['インテリア', '家具', '雑貨', 'チェア', 'ソファ', 'テーブル', '照明', 'ルームツアー', '部屋', '収納', '空間', '建築', 'リノベーション', '建物', '住宅', '設計', '建築家', 'パビリオン', '邸宅', 'ハウス', 'デザイン']),
+]
+
+
+def classify_category(title, excerpt=''):
+    """タイトルと説明文からカテゴリを推定する（index.html の KEYWORD_RULES と同一ルール）。"""
+    text = (title or '') + ' ' + (excerpt or '')
+    for cat, keywords in KEYWORD_RULES_PY:
+        for kw in keywords:
+            if kw in text:
+                return cat
+    return 'interior'
+
+
 # ─── OGP 画像取得 ────────────────────────────────────────────────────────────
 
 def get_ogp_image(url):
@@ -338,17 +385,91 @@ def get_ogp_image(url):
     return ''
 
 
+# ─── YouTube 動画取得 ─────────────────────────────────────────────────────────
+
+def fetch_youtube_channel(channel):
+    """YouTube Data API v3 でチャンネルの最新動画を取得する。"""
+    handle = channel['handle']
+    name   = channel['name']
+
+    # チャンネルのアップロード再生リストIDを取得
+    resp = requests.get(
+        'https://www.googleapis.com/youtube/v3/channels',
+        params={
+            'part':      'contentDetails',
+            'forHandle': handle,
+            'key':       YOUTUBE_API_KEY,
+        },
+        headers=HEADERS,
+        timeout=10,
+    )
+    resp.raise_for_status()
+    items = resp.json().get('items', [])
+    if not items:
+        raise ValueError(f'チャンネルが見つかりません: {handle}')
+    uploads_id = items[0]['contentDetails']['relatedPlaylists']['uploads']
+
+    wait()
+
+    # アップロード再生リストから最新動画を取得
+    resp = requests.get(
+        'https://www.googleapis.com/youtube/v3/playlistItems',
+        params={
+            'part':       'snippet',
+            'playlistId': uploads_id,
+            'maxResults': MAX_YT_VIDEOS,
+            'key':        YOUTUBE_API_KEY,
+        },
+        headers=HEADERS,
+        timeout=10,
+    )
+    resp.raise_for_status()
+
+    articles = []
+    for item in resp.json().get('items', []):
+        snippet  = item['snippet']
+        video_id = snippet.get('resourceId', {}).get('videoId', '')
+        if not video_id:
+            continue
+
+        title    = snippet.get('title', '').strip()
+        desc_raw = snippet.get('description', '')
+        excerpt  = desc_raw[:100].replace('\n', ' ').strip()
+        pub_date = snippet.get('publishedAt', '')[:10]   # YYYY-MM-DD
+
+        thumbs = snippet.get('thumbnails', {})
+        thumb  = (
+            thumbs.get('maxres') or
+            thumbs.get('high')   or
+            thumbs.get('medium') or
+            thumbs.get('default') or {}
+        ).get('url', f'https://img.youtube.com/vi/{video_id}/hqdefault.jpg')
+
+        articles.append({
+            'category':    classify_category(title, excerpt),
+            'source':      name,
+            'source_type': 'YouTube',
+            'title':       title,
+            'url':         f'https://www.youtube.com/watch?v={video_id}',
+            'excerpt':     excerpt,
+            'date':        pub_date,
+            'thumbnail':   thumb,
+        })
+
+    return articles
+
+
 # ─── RSS 取得 ────────────────────────────────────────────────────────────────
 
 def fetch_via_rss(media):
     for rss_url in media.get('rss_urls', []):
         wait()
         try:
-            feed = feedparser.parse(
-                rss_url,
-                request_headers=HEADERS,
-                agent=HEADERS['User-Agent'],
-            )
+            # feedparser 自身の HTTP リクエストはタイムアウト不可のため
+            # requests で先にフェッチしてバイト列を渡す
+            resp = requests.get(rss_url, headers=HEADERS, timeout=15)
+            resp.raise_for_status()
+            feed = feedparser.parse(resp.content)
             if feed.bozo and not feed.entries:
                 continue
             if not feed.entries:
@@ -373,7 +494,8 @@ def fetch_via_rss(media):
                 })
             if articles:
                 return articles, rss_url
-        except Exception:
+        except Exception as e:
+            print(f'    RSS スキップ ({rss_url[:50]}): {e}')
             continue
     return [], None
 
@@ -398,7 +520,7 @@ def fetch_via_html(media):
 
 def fetch_html_page(media, page_url, base_host, seen):
     wait()
-    resp = requests.get(page_url, headers=HEADERS, timeout=20, allow_redirects=True)
+    resp = requests.get(page_url, headers=HEADERS, timeout=15, allow_redirects=True)
     resp.raise_for_status()
     effective_page_url = resp.url
     # resp.content（バイト列）を渡すことで BeautifulSoup が
@@ -507,7 +629,7 @@ def fetch_html_page(media, page_url, base_host, seen):
 # ─── メイン処理 ──────────────────────────────────────────────────────────────
 
 MAX_STORED  = 1000   # CSVに保持する最大記事数
-FIELDNAMES  = ['category', 'source', 'title', 'url', 'excerpt', 'date', 'thumbnail']
+FIELDNAMES  = ['category', 'source', 'source_type', 'title', 'url', 'excerpt', 'date', 'thumbnail']
 
 
 def load_existing_csv():
@@ -544,10 +666,10 @@ def main():
         source = media['source']
         print(f'\n[{source}] ({media["category"]}) 取得中...')
 
-        articles = []
-        method   = ''
-
         try:
+            articles = []
+            method   = ''
+
             articles, used_rss = fetch_via_rss(media)
             if articles:
                 method = f'RSS: {used_rss}'
@@ -561,27 +683,48 @@ def main():
                 else:
                     raise ValueError('記事が 1 件も取得できませんでした')
 
+            # require_japanese フラグが立っている媒体は日本語タイトル以外を除外
+            if media.get('require_japanese'):
+                before   = len(articles)
+                articles = [a for a in articles if has_japanese_chars(a['title'])]
+                dropped  = before - len(articles)
+                if dropped:
+                    print(f'  日本語タイトル以外を除外: {dropped} 件 → 残 {len(articles)} 件')
+
+            print('  OGP 画像取得中...')
+            for article in articles:
+                try:
+                    if article['url'] and not article.get('thumbnail'):
+                        article['thumbnail'] = get_ogp_image(article['url'])
+                except Exception:
+                    article['thumbnail'] = ''
+                status = '✓' if article.get('thumbnail') else '–'
+                print(f'    [{status}] {article["title"][:45]}')
+                new_fetched.append(article)
+
         except Exception as e:
             msg = f'[{source}] {method or "取得"} エラー: {e}'
             print(f'  ✗ {msg}')
             errors.append(msg)
-            continue
 
-        # require_japanese フラグが立っている媒体は日本語タイトル以外を除外
-        if media.get('require_japanese'):
-            before   = len(articles)
-            articles = [a for a in articles if has_japanese_chars(a['title'])]
-            dropped  = before - len(articles)
-            if dropped:
-                print(f'  日本語タイトル以外を除外: {dropped} 件 → 残 {len(articles)} 件')
+    # ── YouTube 動画取得 ──────────────────────────────────────────
+    print(f'\n{"─" * 60}')
+    print(f'  YouTube 動画取得（{len(YOUTUBE_CHANNELS)} チャンネル / 各最大 {MAX_YT_VIDEOS} 本）')
+    print(f'{"─" * 60}')
 
-        print('  OGP 画像取得中...')
-        for article in articles:
-            if article['url'] and not article.get('thumbnail'):
-                article['thumbnail'] = get_ogp_image(article['url'])
-            status = '✓' if article.get('thumbnail') else '–'
-            print(f'    [{status}] {article["title"][:45]}')
-            new_fetched.append(article)
+    for channel in YOUTUBE_CHANNELS:
+        name = channel['name']
+        print(f'\n[{name}] ({channel["handle"]}) 取得中...')
+        try:
+            videos = fetch_youtube_channel(channel)
+            print(f'  取得: {len(videos)} 件')
+            for v in videos:
+                print(f'    - [{v["category"]}] {v["title"][:50]}')
+            new_fetched.extend(videos)
+        except Exception as e:
+            msg = f'[YouTube/{name}] エラー: {e}'
+            print(f'  ✗ {msg}')
+            errors.append(msg)
 
     # ── 重複排除・マージ・ソート・上限カット ───────────────────────
     added   = 0
@@ -606,7 +749,7 @@ def main():
 
     # ── CSV書き出し ───────────────────────────────────────────────
     with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8-sig') as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction='ignore')
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction='ignore', restval='')
         writer.writeheader()
         writer.writerows(existing)
 
