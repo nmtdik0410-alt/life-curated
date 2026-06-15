@@ -82,6 +82,26 @@ body {
 .catnav button.active { background: var(--ink); color: #fff; }
 .catnav button.active .sw { background: rgba(255,255,255,.6) !important; }
 
+
+/* ─── MEDIA FILTER ─── */
+.mediafilter {
+  max-width: 1100px; margin: 0 auto;
+  padding: 10px 28px;
+  display: flex; gap: 4px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.mediafilter button {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 500;
+  padding: 5px 12px; border-radius: 5px;
+  border: 1px solid var(--line);
+  background: transparent; color: var(--ink-soft);
+  cursor: pointer; transition: all .15s;
+}
+.mediafilter button:hover { background: var(--line-soft); color: var(--ink); }
+.mediafilter button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
 /* ─── FEED ─── */
 .feed { max-width: 1100px; margin: 0 auto; padding: 8px 28px 60px; }
 .cat-section { margin-top: 36px; }
@@ -215,6 +235,12 @@ footer {
   <button data-cat="art"><span class="sw" style="background:var(--c-art)"></span>ART</button>
 </div>
 
+<div class="mediafilter" id="mediafilter">
+  <button class="active" data-media="all">すべて</button>
+  <button data-media="article">記事</button>
+  <button data-media="video">動画</button>
+</div>
+
 <div class="feed" id="feed">
   <div style="padding:64px 0;text-align:center;color:var(--ink-faint);font-size:13px;">記事を読み込んでいます…</div>
 </div>
@@ -317,6 +343,7 @@ function parseCSV(text) {
 // ─── 状態 ─────────────────────────────────────────────────────────────────────
 let allData       = [];
 let currentFilter = 'all';
+let currentMedia = 'all';
 const PAGE_SIZE   = 24;
 let visibleCount  = PAGE_SIZE;
 
@@ -383,11 +410,15 @@ function render() {
   const feed = document.getElementById('feed');
   feed.innerHTML = '';
 
+  const mediaFiltered = currentMedia === 'all' ? allData
+    : currentMedia === 'video' ? allData.filter(d => d.source_type === 'YouTube')
+    : allData.filter(d => d.source_type !== 'YouTube');
+
   if (currentFilter === 'all') {
     // ── すべて表示: カテゴリごとに最新3件 + 「もっと見る」ボタン ──
     let hasAny = false;
     Object.keys(CATS).forEach(key => {
-      const catItems = allData.filter(d => d.category === key);
+      const catItems = mediaFiltered.filter(d => d.category === key);
       if (catItems.length === 0) return;
       hasAny = true;
       renderSection(feed, key, catItems.slice(0, 3), true, catItems.length);
@@ -397,7 +428,7 @@ function render() {
     }
   } else {
     // ── 単一カテゴリ: ページネーション付き全件表示 ──
-    const filtered = allData.filter(d => d.category === currentFilter);
+    const filtered = mediaFiltered.filter(d => d.category === currentFilter);
     const visible   = filtered.slice(0, visibleCount);
 
     if (visible.length === 0) {
@@ -434,6 +465,16 @@ document.querySelectorAll('#catnav button').forEach(btn => {
 });
 
 // ─── CSV fetch 自動読み込み ───────────────────────────────────────────────────
+
+document.querySelectorAll('#mediafilter button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#mediafilter button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMedia = btn.dataset.media;
+    render();
+  });
+});
+
 async function loadCSV() {
   try {
     const res = await fetch('life_curated_feed.csv');
