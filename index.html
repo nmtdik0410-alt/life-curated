@@ -412,7 +412,7 @@ function render() {
 
   const mediaFiltered = currentMedia === 'all' ? allData
     : currentMedia === 'video' ? allData.filter(d => d.source_type === 'YouTube')
-    : allData.filter(d => d.source_type !== 'YouTube');
+    : allData.filter(d => !d.source_type || d.source_type !== 'YouTube');
 
   if (currentFilter === 'all') {
     // ── すべて表示: カテゴリごとに最新3件 + 「もっと見る」ボタン ──
