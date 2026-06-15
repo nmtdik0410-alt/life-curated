@@ -27,9 +27,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip -q
-          pip install requests beautifulsoup4 feedparser lxml -q
+          pip install requests beautifulsoup4 feedparser lxml python-dotenv google-api-python-client -q
 
       - name: Run scraper
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python scraper.py
 
       - name: Commit and push if CSV changed
