@@ -34,11 +34,14 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python scraper.py
 
+      - name: Write timestamp (JST)
+        run: TZ=Asia/Tokyo date +'%m.%d %H:%M' > last_updated.txt
+
       - name: Commit and push if CSV changed
         run: |
           git config --local user.name  "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add life_curated_feed.csv life_curated_errors.txt || true
+          git add life_curated_feed.csv last_updated.txt life_curated_errors.txt || true
           if git diff --staged --quiet; then
             echo "変更なし — コミットをスキップします"
           else

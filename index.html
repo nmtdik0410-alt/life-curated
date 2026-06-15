@@ -498,6 +498,7 @@ async function loadCSV() {
         : rawDate;
       return {
         source,
+        source_type: r.source_type || '',
         title,
         url:       r.url       || r['URL']        || '#',
         rawDate,
@@ -511,11 +512,21 @@ async function loadCSV() {
     // ④ 新着順ソート
     allData.sort((a, b) => (b.rawDate || '').localeCompare(a.rawDate || ''));
 
-    // トップバーの更新日
+    // トップバーの更新日時（last_updated.txt を優先、なければ CSV 最新日）
     const latest = allData.find(d => d.rawDate)?.rawDate;
-    document.getElementById('updated-date').textContent = latest
-      ? `Updated ${latest.slice(5, 10).replace('-', '.')}`
-      : 'Updated';
+    try {
+      const tsRes = await fetch('last_updated.txt');
+      if (tsRes.ok) {
+        const tsText = (await tsRes.text()).trim();
+        document.getElementById('updated-date').textContent = `Updated ${tsText}`;
+      } else {
+        throw new Error('not found');
+      }
+    } catch {
+      document.getElementById('updated-date').textContent = latest
+        ? `Updated ${latest.slice(5, 10).replace('-', '.')}`
+        : 'Updated';
+    }
 
     render();
   } catch (err) {
