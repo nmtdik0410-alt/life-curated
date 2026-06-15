@@ -241,6 +241,33 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|article|item|card|news)'},
         ],
     },
+    {
+        'category': 'fashion',
+        'source':   'WWD JAPAN',
+        'base_url': 'https://www.wwdjapan.com',
+        'rss_urls': [
+            'https://www.wwdjapan.com/feed/',
+            'https://www.wwdjapan.com/feed',
+            'https://www.wwdjapan.com/rss.xml',
+        ],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(article|post|item|card)'},
+        ],
+    },
+    {
+        'category': 'product',
+        'source':   'BLUE LUG BLOG',
+        'base_url': 'https://bluelug.com/blog',
+        'rss_urls': [
+            'https://bluelug.com/blog/feed/',
+            'https://bluelug.com/blog/feed',
+        ],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|entry|article|item)'},
+        ],
+    },
 ]
 
 # ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
@@ -357,14 +384,46 @@ KEYWORD_RULES_PY = [
 ]
 
 
-def classify_category(title, excerpt=''):
+
+# ─── ソース別デフォルトカテゴリ ──────────────────────────────────
+SOURCE_DEFAULT_CATEGORY = {
+    'Casa BRUTUS Web':              'interior',
+    'Casa BRUTUS Design':           'interior',
+    'Elle Decor Japan':             'interior',
+    'AXIS Web':                     'interior',
+    'Hanako Web':                   'food',
+    '&Premium Web':                 'food',
+    'POPEYE Web':                   'culture',
+    'Time Out Tokyo':               'event',
+    'GetNavi Web':                  'product',
+    'WIRED Japan':                  'product',
+    'ギズモード・ジャパン':           'product',
+    'BRUTUS.jp':                    'culture',
+    '美術手帖':                      'art',
+    'WWD JAPAN':                    'fashion',
+    'BLUE LUG BLOG':                'product',
+    'ACTUS':                        'interior',
+    'CONNECT北欧':                  'interior',
+    'TOKYOROOMS':                   'interior',
+    'クリエイティブの裏側':           'interior',
+    'HYGGESCAPE':                   'interior',
+    'ゆっくりインテリア(カジマグ)':   'interior',
+    'McGuffin':                     'culture',
+    'HOUYHNHNM':                    'fashion',
+    'IN THE MAKING':                'food',
+    'キオク的サンサク':               'interior',
+    'GQ JAPAN':                     'culture',
+    'ELLE Japan':                   'fashion',
+}
+
+def classify_category(title, excerpt='', source=''):
     """タイトルと説明文からカテゴリを推定する（index.html の KEYWORD_RULES と同一ルール）。"""
     text = (title or '') + ' ' + (excerpt or '')
     for cat, keywords in KEYWORD_RULES_PY:
         for kw in keywords:
             if kw in text:
                 return cat
-    return 'interior'
+    return SOURCE_DEFAULT_CATEGORY.get(source, 'interior')
 
 
 # ─── OGP 画像取得 ────────────────────────────────────────────────────────────
@@ -545,7 +604,7 @@ def fetch_youtube_channel(channel):
         pub_date = snippet.get('publishedAt', '')[:10]
 
         articles.append({
-            'category':    classify_category(title, excerpt),
+            'category':    classify_category(title, excerpt, name),
             'source':      name,
             'source_type': 'YouTube',
             'title':       title,
