@@ -344,19 +344,19 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
         ],
     },
-    {
-        'category': 'インテリア',
-        'source':   'RIGNA',
-        'base_url': 'https://rigna.co.jp',
-        'rss_urls': [
-            'https://rigna.co.jp/feed/',
-            'https://rigna.co.jp/feed',
-        ],
-        'article_selectors': [
-            {'tag': 'article', 'class_re': r''},
-            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
-        ],
-    },
+    # {
+    #     'category': 'インテリア',
+    #     'source':   'RIGNA',
+    #     'base_url': 'https://rigna.co.jp',
+    #     'rss_urls': [
+    #         'https://rigna.co.jp/feed/',
+    #         'https://rigna.co.jp/feed',
+    #     ],
+    #     'article_selectors': [
+    #         {'tag': 'article', 'class_re': r''},
+    #         {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+    #     ],
+    # },
     {
         'category': 'インテリア',
         'source':   '北欧、暮らしの道具店',
@@ -368,15 +368,15 @@ MEDIA_LIST = [
         ],
         'url_path_filter': '/note/',
     },
-    {
-        'category': 'インテリア',
-        'source':   'MAARKET',
-        'base_url': 'https://maarket.jp',
-        'rss_urls': [],
-        'start_urls': ['https://maarket.jp/view/news/list'],
-        'url_path_filter': '/view/news/2',
-        'title_prefer_shorter': True,
-    },
+    # {
+    #     'category': 'インテリア',
+    #     'source':   'MAARKET',
+    #     'base_url': 'https://maarket.jp',
+    #     'rss_urls': [],
+    #     'start_urls': ['https://maarket.jp/view/news/list'],
+    #     'url_path_filter': '/view/news/2',
+    #     'title_prefer_shorter': True,
+    # },
 ]
 
 # ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
