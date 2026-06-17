@@ -37,14 +37,13 @@ jobs:
       - name: Write timestamp (JST)
         run: TZ=Asia/Tokyo date +'%m.%d %H:%M' > last_updated.txt
 
-      - name: Commit and push if CSV changed
+      - name: Commit and push
         run: |
           git config --local user.name  "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add life_curated_feed.csv last_updated.txt life_curated_errors.txt || true
-          if git diff --staged --quiet; then
-            echo "変更なし — コミットをスキップします"
-          else
-            git commit -m "chore: update feed $(date -u +'%Y-%m-%d')"
-            git push
-          fi
+          # CSVは変更があればステージ（新規記事ゼロでもエラーにしない）
+          git add life_curated_feed.csv 2>/dev/null || true
+          # last_updated.txtは毎回内容が変わるため常にコミット対象
+          git add last_updated.txt
+          git commit -m "chore: update feed $(TZ=Asia/Tokyo date +'%Y-%m-%d')"
+          git push
