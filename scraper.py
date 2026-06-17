@@ -268,6 +268,57 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|entry|article|item)'},
         ],
     },
+    {
+        'category': 'カフェ・スポット',
+        'source':   'カジキッサ',
+        'base_url': 'https://kajikissa.com',
+        'rss_urls': [
+            'https://kajikissa.com/feed/',
+            'https://kajikissa.com/feed',
+        ],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'fashion',
+        'source':   'HOUYHNHNM',
+        'base_url': 'https://www.houyhnhnm.jp',
+        'rss_urls': [
+            'https://www.houyhnhnm.jp/feed/',
+            'https://www.houyhnhnm.jp/feed',
+        ],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(article|post|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'インテリア',
+        'source':   'キオク的サンサク',
+        'base_url': 'https://www.kiokutekisansaku.com',
+        'rss_urls': [],
+        'start_urls': ['https://www.kiokutekisansaku.com/post'],
+        'article_selectors': [
+            {'tag': 'div', 'class_re': r'(post|article|item|card|entry|blog)'},
+        ],
+        'url_path_filter': '/posts/',
+        'title_strip_re':  r'^\d{1,2}\.\d{1,2}\.\d{4}',  # "12.19.2024" / "11.8.2024" の日付プレフィックスを除去
+    },
+    {
+        'category': 'インテリア',
+        'source':   'ROOMIE',
+        'base_url': 'https://www.roomie.jp',
+        'rss_urls': [
+            'https://www.roomie.jp/feed/',
+            'https://www.roomie.jp/feed',
+        ],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
 ]
 
 # ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
@@ -700,7 +751,8 @@ def fetch_html_page(media, page_url, base_host, seen):
         normalize_host(urlparse(effective_page_url).netloc),
     }
 
-    url_path_filter = media.get('url_path_filter', '')
+    url_path_filter  = media.get('url_path_filter', '')
+    title_strip_re   = media.get('title_strip_re', '')
 
     def looks_like_article(href):
         parsed = urlparse(href)
@@ -742,6 +794,8 @@ def fetch_html_page(media, page_url, base_host, seen):
         title = (heading.get_text(strip=True) if heading
                  else a_tag.get_text(strip=True))
         title = clean_text(title)
+        if title_strip_re:
+            title = re.sub(title_strip_re, '', title).strip()
         if not title or len(title) < 4:
             continue
         if media.get('require_japanese') and not has_japanese_chars(title):
@@ -770,6 +824,8 @@ def fetch_html_page(media, page_url, base_host, seen):
                 continue
             seen.add(full_url)
             title = clean_text(a_tag.get_text())
+            if title_strip_re:
+                title = re.sub(title_strip_re, '', title).strip()
             if not title or len(title) < 8:
                 continue
             if media.get('require_japanese') and not has_japanese_chars(title):
