@@ -142,8 +142,21 @@ body {
 .card-thumb {
   width: 100%; aspect-ratio: 16/10;
   background: var(--line-soft); overflow: hidden;
+  position: relative;
 }
 .card-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card-thumb .play-btn {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.card-thumb .play-btn span {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: #fff;
+  padding-left: 2px; /* ▶の視覚的中央補正 */
+}
 .card-body {
   padding: 14px 16px 16px;
   display: flex; flex-direction: column; flex-grow: 1; gap: 8px;
@@ -373,8 +386,10 @@ function renderSection(container, key, items, showMoreBtn = false, totalCount = 
     a.href = item.url || '#';
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
+    const playOverlay = item.source_type === 'YouTube'
+      ? `<div class="play-btn"><span>▶</span></div>` : '';
     const thumbHtml = item.thumbnail
-      ? `<div class="card-thumb"><img src="${esc(item.thumbnail)}" alt="" loading="lazy" onerror="this.parentElement.remove()"></div>`
+      ? `<div class="card-thumb"><img src="${esc(item.thumbnail)}" alt="" loading="lazy" onerror="this.parentElement.remove()">${playOverlay}</div>`
       : '';
     a.innerHTML = `
       ${thumbHtml}
