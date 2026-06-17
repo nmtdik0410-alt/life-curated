@@ -319,6 +319,19 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
         ],
     },
+    {
+        'category': 'fashion',
+        'source':   'BAYCREW\'S',
+        'base_url': 'https://baycrews.co.jp',
+        'rss_urls': [
+            'https://baycrews.co.jp/feed',
+            'https://baycrews.co.jp/feed/',
+        ],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
 ]
 
 # ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
