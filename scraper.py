@@ -368,6 +368,15 @@ MEDIA_LIST = [
         ],
         'url_path_filter': '/note/',
     },
+    {
+        'category': 'インテリア',
+        'source':   'MAARKET',
+        'base_url': 'https://maarket.jp',
+        'rss_urls': [],
+        'start_urls': ['https://maarket.jp/view/news/list'],
+        'url_path_filter': '/view/news/2',
+        'title_prefer_shorter': True,
+    },
 ]
 
 # ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
@@ -866,30 +875,64 @@ def fetch_html_page(media, page_url, base_host, seen):
             break
 
     if not articles:
-        for a_tag in soup.find_all('a', href=True):
-            href = a_tag['href'].strip()
-            full_url = urljoin(effective_page_url, href)
-            if full_url in seen or not looks_like_article(full_url):
-                continue
-            seen.add(full_url)
-            title = clean_text(a_tag.get_text())
-            if title_strip_re:
-                title = re.sub(title_strip_re, '', title).strip()
-            if not title or len(title) < 8:
-                continue
-            if media.get('require_japanese') and not has_japanese_chars(title):
-                continue
-            articles.append({
-                'category':  media['category'],
-                'source':    media['source'],
-                'title':     title,
-                'url':       full_url,
-                'excerpt':   '',
-                'date':      '',
-                'thumbnail': '',
-            })
-            if len(articles) >= MAX_ARTICLES:
-                break
+        if media.get('title_prefer_shorter'):
+            # 同URLが本文抜粋→タイトルの順で2回リンクされるページ向け（例: MAARKET）
+            # 全リンクを収集してURLごとに最短テキストをタイトルとして採用する
+            link_texts: dict = {}
+            for a_tag in soup.find_all('a', href=True):
+                href = a_tag['href'].strip()
+                full_url = urljoin(effective_page_url, href)
+                if not looks_like_article(full_url):
+                    continue
+                text = clean_text(a_tag.get_text())
+                if text and len(text) >= 8:
+                    link_texts.setdefault(full_url, []).append(text)
+            for full_url, texts in list(link_texts.items()):
+                title = min(texts, key=len)
+                long_texts = [t for t in texts if t != title]
+                excerpt = long_texts[0][:200] if long_texts else ''
+                if title_strip_re:
+                    title = re.sub(title_strip_re, '', title).strip()
+                if not title or len(title) < 8:
+                    continue
+                if media.get('require_japanese') and not has_japanese_chars(title):
+                    continue
+                articles.append({
+                    'category':  media['category'],
+                    'source':    media['source'],
+                    'title':     title,
+                    'url':       full_url,
+                    'excerpt':   excerpt,
+                    'date':      '',
+                    'thumbnail': '',
+                })
+                if len(articles) >= MAX_ARTICLES:
+                    break
+        else:
+            for a_tag in soup.find_all('a', href=True):
+                href = a_tag['href'].strip()
+                full_url = urljoin(effective_page_url, href)
+                if full_url in seen or not looks_like_article(full_url):
+                    continue
+                seen.add(full_url)
+                title = clean_text(a_tag.get_text())
+                if title_strip_re:
+                    title = re.sub(title_strip_re, '', title).strip()
+                if not title or len(title) < 8:
+                    continue
+                if media.get('require_japanese') and not has_japanese_chars(title):
+                    continue
+                articles.append({
+                    'category':  media['category'],
+                    'source':    media['source'],
+                    'title':     title,
+                    'url':       full_url,
+                    'excerpt':   '',
+                    'date':      '',
+                    'thumbnail': '',
+                })
+                if len(articles) >= MAX_ARTICLES:
+                    break
 
     return articles
 
