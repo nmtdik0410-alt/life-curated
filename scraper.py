@@ -19,6 +19,7 @@ def install_packages():
         ('feedparser',    'feedparser'),
         ('lxml',          'lxml'),
         ('python-dotenv', 'dotenv'),
+        ('anthropic',     'anthropic'),
     ]
     for pkg, import_name in required:
         try:
@@ -60,6 +61,16 @@ HEADERS = {
 }
 
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', '')
+
+# ─── Claude API クライアント（APIキーがある場合のみ初期化） ──────────────────
+ANTHROPIC_CLIENT = None
+_ANTHROPIC_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+if _ANTHROPIC_KEY:
+    try:
+        import anthropic as _anthropic_lib
+        ANTHROPIC_CLIENT = _anthropic_lib.Anthropic(api_key=_ANTHROPIC_KEY)
+    except Exception:
+        pass
 
 # ─── 媒体定義 ─────────────────────────────────────────────────────────────────
 MEDIA_LIST = [
@@ -512,6 +523,45 @@ def classify_category(title, excerpt='', source=''):
             if kw in text:
                 return cat
     return 'culture'
+
+
+_VALID_CATS = {'interior', 'food', 'travel', 'event', 'product', 'fashion', 'culture', 'art'}
+
+_CLAUDE_SYSTEM = """以下の記事タイトルを8つのカテゴリのいずれか1つに分類してください。
+カテゴリ：interior / food / travel / event / product / fashion / culture / art
+番号付きリストで、カテゴリ名のみ1単語で回答してください。
+
+定義：
+- interior：家具・インテリア・部屋づくり・収納・照明・リノベ
+- food：カフェ・レストラン・料理・グルメ・コーヒー・食
+- travel：旅行・観光・ホテル・街歩き・旅先
+- event：展示・イベント・フェア・期間限定・オープン・ポップアップ
+- product：家電・ガジェット・道具・プロダクト・調理器具・カメラ
+- fashion：服・ブランド・コーデ・スニーカー・バッグ・アクセサリー
+- culture：映画・音楽・書籍・マンガ・カルチャー・インタビュー
+- art：美術館・ギャラリー・個展・展覧会・アーティスト・絵画"""
+
+
+def classify_with_claude_batch(articles):
+    """1ソース分の記事をClaude APIでまとめて分類。失敗時はNoneを返す。"""
+    if not ANTHROPIC_CLIENT or not articles:
+        return None
+    prompt = '\n'.join(f'{i+1}. {a["title"]}' for i, a in enumerate(articles))
+    try:
+        msg = ANTHROPIC_CLIENT.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=50,
+            system=_CLAUDE_SYSTEM,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        cats = []
+        for line in msg.content[0].text.strip().split('\n'):
+            line = re.sub(r'^\d+[\.\:\)]\s*', '', line.strip()).lower()
+            cats.append(line if line in _VALID_CATS else None)
+        return cats
+    except Exception as e:
+        print(f'    Claude API エラー: {e}')
+        return None
 
 
 # ─── OGP 画像取得 ────────────────────────────────────────────────────────────
@@ -990,7 +1040,17 @@ def main():
                     article['thumbnail'] = ''
                 status = '✓' if article.get('thumbnail') else '–'
                 print(f'    [{status}] {article["title"][:45]}')
-                new_fetched.append(article)
+
+            # Claude API でまとめて分類（フォールバック：キーワードマッチ）
+            claude_cats = classify_with_claude_batch(articles)
+            if claude_cats:
+                print(f'  Claude 分類: {" / ".join(c or "?" for c in claude_cats)}')
+            for i, article in enumerate(articles):
+                if claude_cats and i < len(claude_cats) and claude_cats[i]:
+                    article['category'] = claude_cats[i]
+                else:
+                    article['category'] = classify_category(article['title'], article.get('excerpt', ''))
+            new_fetched.extend(articles)
 
         except Exception as e:
             msg = f'[{source}] {method or "取得"} エラー: {e}'
