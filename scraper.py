@@ -168,20 +168,20 @@ MEDIA_LIST = [
         ],
         'require_japanese': True,
     },
-    {
-        'category': 'ガジェット・プロダクト',
-        'source':   'GetNavi Web',
-        'base_url': 'https://getnavi.jp',
-        'rss_urls': [
-            'https://getnavi.jp/gadgets/feed/',
-            'https://getnavi.jp/feed/',
-            'https://getnavi.jp/feed',
-        ],
-        'article_selectors': [
-            {'tag': 'article', 'class_re': r''},
-            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
-        ],
-    },
+    # {
+    #     'category': 'ガジェット・プロダクト',
+    #     'source':   'GetNavi Web',
+    #     'base_url': 'https://getnavi.jp',
+    #     'rss_urls': [
+    #         'https://getnavi.jp/gadgets/feed/',
+    #         'https://getnavi.jp/feed/',
+    #         'https://getnavi.jp/feed',
+    #     ],
+    #     'article_selectors': [
+    #         {'tag': 'article', 'class_re': r''},
+    #         {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+    #     ],
+    # },
     {
         'category': 'インテリア',
         'source':   'Casa BRUTUS Design',
@@ -266,19 +266,19 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(article|post|item|card)'},
         ],
     },
-    {
-        'category': 'product',
-        'source':   'BLUE LUG BLOG',
-        'base_url': 'https://bluelug.com/blog',
-        'rss_urls': [
-            'https://bluelug.com/blog/feed/',
-            'https://bluelug.com/blog/feed',
-        ],
-        'article_selectors': [
-            {'tag': 'article', 'class_re': r''},
-            {'tag': 'div',     'class_re': r'(post|entry|article|item)'},
-        ],
-    },
+    # {
+    #     'category': 'product',
+    #     'source':   'BLUE LUG BLOG',
+    #     'base_url': 'https://bluelug.com/blog',
+    #     'rss_urls': [
+    #         'https://bluelug.com/blog/feed/',
+    #         'https://bluelug.com/blog/feed',
+    #     ],
+    #     'article_selectors': [
+    #         {'tag': 'article', 'class_re': r''},
+    #         {'tag': 'div',     'class_re': r'(post|entry|article|item)'},
+    #     ],
+    # },
     {
         'category': 'カフェ・スポット',
         'source':   'カジキッサ',
