@@ -388,6 +388,67 @@ MEDIA_LIST = [
     #     'url_path_filter': '/view/news/2',
     #     'title_prefer_shorter': True,
     # },
+    {
+        'category': 'product',
+        'source':   'PHILE WEB',
+        'base_url': 'https://www.phileweb.com',
+        'rss_urls': ['https://www.phileweb.com/rss.php'],
+    },
+    {
+        'category': 'travel',
+        'source':   'colocal',
+        'base_url': 'https://colocal.jp',
+        'rss_urls': ['https://colocal.jp/feed/'],
+    },
+    {
+        'category': 'product',
+        'source':   'CAMP HACK',
+        'base_url': 'https://camphack.nap-camp.com',
+        'rss_urls': ['https://camphack.nap-camp.com/feed/'],
+    },
+    {
+        'category': 'fashion',
+        'source':   'FULLRESS',
+        'base_url': 'https://fullress.com',
+        'rss_urls': ['https://fullress.com/feed/'],
+    },
+    {
+        'category': 'fashion',
+        'source':   'GQ JAPAN Web',
+        'base_url': 'https://www.gqjapan.jp',
+        'rss_urls': ['https://www.gqjapan.jp/rss/'],
+    },
+    {
+        'category': 'product',
+        'source':   'VAGUE',
+        'base_url': 'https://vague.style',
+        'rss_urls': ['https://vague.style/feed/'],
+    },
+    {
+        'category': 'product',
+        'source':   'LIFEHACKER JP',
+        'base_url': 'https://www.lifehacker.jp',
+        'rss_urls': ['https://www.lifehacker.jp/feed/'],
+    },
+    # UOMO: トップページがJS重依存のため記事取得不可、保留
+    # {
+    #     'category': 'fashion',
+    #     'source':   'UOMO',
+    #     'base_url': 'https://webuomo.jp',
+    #     'rss_urls': [],
+    #     'start_urls': ['https://webuomo.jp/'],
+    #     'url_path_filter': '/20',
+    # },
+    {
+        'category': 'design',
+        'source':   'Pen Online',
+        'base_url': 'https://www.pen-online.jp',
+        'rss_urls': [],
+        'start_urls': ['https://www.pen-online.jp/'],
+        'url_path_filter': '/article/',
+        'require_japanese': True,
+        'title_strip_re': r'^(Art&Design|Lifestyle|Gourmet|Watches|Fashion|Travel|Culture|Art|Beauty|Design)\s+',
+    },
 ]
 
 # ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
