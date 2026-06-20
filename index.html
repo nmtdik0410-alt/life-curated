@@ -196,6 +196,12 @@ body {
   font-size: 20px; color: #fff;
   padding-left: 2px; /* ▶の視覚的中央補正 */
 }
+.card-thumb-placeholder {
+  width: 100%; aspect-ratio: 16/9;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  color: rgba(255,255,255,.7);
+}
 .card-body {
   padding: 14px 16px 16px;
   display: flex; flex-direction: column; flex-grow: 1; gap: 8px;
@@ -432,9 +438,10 @@ function renderCards(grid, items, accent) {
     a.rel = 'noopener noreferrer';
     const playOverlay = item.source_type === 'YouTube'
       ? `<div class="play-btn"><span>▶</span></div>` : '';
+    const catColor = `var(--c-${item.category || 'culture'})`;
     const thumbHtml = item.thumbnail
       ? `<div class="card-thumb"><img src="${esc(item.thumbnail)}" alt="" loading="lazy" onerror="this.parentElement.remove()">${playOverlay}</div>`
-      : '';
+      : `<div class="card-thumb-placeholder" style="background:${catColor}">${(item.category || 'CULTURE').toUpperCase()}</div>`;
     a.innerHTML = `
       ${thumbHtml}
       <div class="card-body">

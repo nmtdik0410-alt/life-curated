@@ -1274,6 +1274,21 @@ def main():
 
     existing.sort(key=lambda a: a.get('date') or '', reverse=True)
 
+    # ─── サムネイル補完（空の記事を最大100件・古い順から） ──────
+    BACKFILL_THUMB_LIMIT = 100
+    thumb_targets = [r for r in existing if not r.get('thumbnail')]
+    print(f'\nサムネイル補完対象: {len(thumb_targets)}件 → 最大{BACKFILL_THUMB_LIMIT}件処理')
+    thumb_added = 0
+    for row in reversed(thumb_targets[:BACKFILL_THUMB_LIMIT]):
+        try:
+            thumb = get_ogp_image(row['url'])
+            if thumb:
+                row['thumbnail'] = thumb
+                thumb_added += 1
+        except Exception:
+            pass
+    print(f'サムネイル補完完了: {thumb_added}件')
+
     with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction='ignore', restval='')
         writer.writeheader()
