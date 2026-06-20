@@ -81,7 +81,20 @@ HEADERS = {
     'Accept-Language': 'ja,ja-JP;q=0.9,en;q=0.3',
 }
 
-YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', '')
+YOUTUBE_API_KEY      = os.environ.get('YOUTUBE_API_KEY', '')
+UNSPLASH_ACCESS_KEY  = os.environ.get('UNSPLASH_ACCESS_KEY', '')
+
+UNSPLASH_CATEGORY_QUERIES = {
+    'interior': 'nordic interior furniture room',
+    'design':   'architecture building design',
+    'food':     'cafe coffee food',
+    'travel':   'travel landscape japan local',
+    'event':    'exhibition art event gallery',
+    'product':  'gadget technology product',
+    'fashion':  'fashion style clothing',
+    'culture':  'culture music book film',
+    'art':      'art museum painting exhibition',
+}
 
 # ─── Claude API クライアント（APIキーがある場合のみ初期化） ──────────────────
 ANTHROPIC_CLIENT = None
@@ -656,6 +669,30 @@ def classify_with_claude_batch(articles):
     except Exception as e:
         print(f'    Claude API エラー: {e}')
         return None
+
+
+# ─── Unsplash 画像取得 ───────────────────────────────────────────────────────
+
+def get_unsplash_image(category):
+    if not UNSPLASH_ACCESS_KEY:
+        return ''
+    try:
+        query = UNSPLASH_CATEGORY_QUERIES.get(category, 'lifestyle')
+        resp = requests.get(
+            'https://api.unsplash.com/photos/random',
+            params={
+                'query':          query,
+                'orientation':    'landscape',
+                'content_filter': 'high',
+            },
+            headers={'Authorization': f'Client-ID {UNSPLASH_ACCESS_KEY}'},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data.get('urls', {}).get('regular', '')
+    except Exception:
+        return ''
 
 
 # ─── OGP 画像取得 ────────────────────────────────────────────────────────────
@@ -1274,20 +1311,29 @@ def main():
 
     existing.sort(key=lambda a: a.get('date') or '', reverse=True)
 
-    # ─── サムネイル補完（空の記事を最大100件・古い順から） ──────
-    BACKFILL_THUMB_LIMIT = 100
-    thumb_targets = [r for r in existing if not r.get('thumbnail')]
-    print(f'\nサムネイル補完対象: {len(thumb_targets)}件 → 最大{BACKFILL_THUMB_LIMIT}件処理')
-    thumb_added = 0
-    for row in reversed(thumb_targets[:BACKFILL_THUMB_LIMIT]):
+    # ─── サムネイル補完（空の記事を最大100件・新しい順から） ────
+    thumb_targets = sorted(
+        [r for r in existing if not r.get('thumbnail')],
+        key=lambda a: a.get('date') or '',
+        reverse=True,
+    )
+    print(f'\nサムネイル補完対象: {len(thumb_targets)}件 → 最大100件処理')
+    ogp_added      = 0
+    unsplash_added = 0
+    for row in thumb_targets[:100]:
         try:
             thumb = get_ogp_image(row['url'])
             if thumb:
                 row['thumbnail'] = thumb
-                thumb_added += 1
+                ogp_added += 1
+            elif UNSPLASH_ACCESS_KEY:
+                thumb = get_unsplash_image(row.get('category', 'culture'))
+                if thumb:
+                    row['thumbnail'] = thumb
+                    unsplash_added += 1
         except Exception:
             pass
-    print(f'サムネイル補完完了: {thumb_added}件')
+    print(f'OGP補完: {ogp_added}件 / Unsplash補完: {unsplash_added}件')
 
     with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction='ignore', restval='')
