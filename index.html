@@ -16,6 +16,7 @@
   --ink-faint: #a1a1aa;
 
   --c-interior: #52525b;
+  --c-design:   #4a7a6b;
   --c-food:     #8b5e3a;
   --c-travel:   #3d6b52;
   --c-event:    #8b5a6b;
@@ -239,6 +240,7 @@ footer {
 <div class="catnav" id="catnav">
   <button class="active" data-cat="all"><span class="sw" style="background:var(--ink)"></span>すべて</button>
   <button data-cat="interior"><span class="sw" style="background:var(--c-interior)"></span>INTERIOR</button>
+  <button data-cat="design"><span class="sw" style="background:var(--c-design)"></span>DESIGN</button>
   <button data-cat="food"><span class="sw" style="background:var(--c-food)"></span>FOOD</button>
   <button data-cat="travel"><span class="sw" style="background:var(--c-travel)"></span>TRAVEL</button>
   <button data-cat="event"><span class="sw" style="background:var(--c-event)"></span>EVENT</button>
@@ -264,9 +266,10 @@ footer {
 </footer>
 
 <script>
-// ─── カテゴリ定義（8カテゴリ） ────────────────────────────────────────────────
+// ─── カテゴリ定義（9カテゴリ） ────────────────────────────────────────────────
 const CATS = {
   interior: { label: 'INTERIOR', accent: 'var(--c-interior)' },
+  design:   { label: 'DESIGN',   accent: 'var(--c-design)'   },
   food:     { label: 'FOOD',     accent: 'var(--c-food)'     },
   travel:   { label: 'TRAVEL',   accent: 'var(--c-travel)'   },
   event:    { label: 'EVENT',    accent: 'var(--c-event)'    },
@@ -279,34 +282,35 @@ const CATS = {
 // スクレイパーのカテゴリ列 → UIカテゴリキー
 const CATEGORY_LABEL_TO_KEY = {
   'インテリア':             'interior',
-  '建築':                   'interior',   // 建築はINTERIORに統合
-  'カフェ・スポット':       'food',        // カフェ → FOOD
+  '建築':                   'design',
+  'カフェ・スポット':       'food',
   'イベント':               'event',
-  'ガジェット・プロダクト': 'product',     // ガジェット → PRODUCT
+  'ガジェット・プロダクト': 'product',
   'カルチャー・アート':     'culture',
 };
 
 // キーワード再分類（上から順にマッチ、最初のルールが優先）
 const KEYWORD_RULES = [
-  { cat: 'art',      keywords: ['美術館', 'ギャラリー', '個展', '展覧会', 'アーティスト', '美術', 'インスタレーション',
-                                 'アートフェア', 'コレクター', '絵画', '彫刻', '写真展', '版画', 'アート'] },
-  { cat: 'food',     keywords: ['カフェ', 'コーヒー', 'レストラン', 'グルメ', '料理', 'ランチ', 'ディナー', 'スイーツ',
-                                 'ベーカリー', '喫茶', 'メニュー', 'シェフ', '食材', 'レシピ', 'パン', 'ワイン', 'Bar', 'バー', '食'] },
-  { cat: 'travel',   keywords: ['旅行', '観光', 'ホテル', '宿', '旅先', '海外', 'トラベル', '街歩き', '空港',
-                                 '旅館', '温泉', 'バックパック', 'ツーリスト'] },
-  { cat: 'event',    keywords: ['展示', 'イベント', 'フェア', '期間限定', 'オープン', 'リニューアル',
-                                 'デザインウィーク', 'サローネ', 'フェスティバル', 'マーケット', 'ポップアップ'] },
+  { cat: 'art',      keywords: ['美術館', 'ギャラリー', '個展', '展覧会', 'アーティスト', '絵画', '彫刻', '写真展',
+                                 'インスタレーション', 'コレクター'] },
+  { cat: 'food',     keywords: ['カフェ', 'コーヒー', 'レストラン', 'グルメ', '料理', 'レシピ', 'ランチ', 'ディナー',
+                                 'スイーツ', 'ベーカリー', '喫茶', 'シェフ', 'ワイン', 'Bar', '食材'] },
+  { cat: 'travel',   keywords: ['旅行', '観光', 'ホテル', '旅館', '温泉', '旅先', '宿', '街歩き', '海外', '都市'] },
+  { cat: 'event',    keywords: ['イベント', 'フェア', '期間限定', 'オープン', 'ポップアップ', 'フェスティバル',
+                                 'マーケット', 'ワークショップ', 'デザインウィーク', 'サローネ'] },
+  { cat: 'design',   keywords: ['建築', 'プロダクトデザイン', '工業デザイン', 'グラフィック', 'クラフト', 'デザイナー',
+                                 '設計', '建物', 'アーキテクト', 'パビリオン', '構造'] },
   { cat: 'interior', keywords: ['インテリア', '家具', 'ソファ', 'チェア', 'テーブル', '照明', '収納',
-                                 'ルームツアー', '一人暮らし', 'リノベーション', 'リビング', 'ダイニング',
-                                 '北欧', 'マンション', '戸建て', '間取り', '模様替え', 'ラグ', 'カーテン', '棚'] },
-  { cat: 'product',  keywords: ['ガジェット', '家電', 'プロダクト', 'デバイス', 'スマホ', 'アプリ',
-                                 '掃除機', '炊飯器', '調理器具', 'キッチン用品', '文具', '道具', 'ギア',
-                                 '自転車', 'カメラ', 'オーディオ', 'スピーカー', '新発売', 'レビュー'] },
+                                 'ルームツアー', 'リノベーション', '一人暮らし', '北欧', '間取り', '模様替え',
+                                 'ラグ', 'カーテン', '棚', 'DIY', 'リビング', 'ダイニング'] },
+  { cat: 'product',  keywords: ['ガジェット', '家電', 'スマホ', 'カメラ', '乗り物', '自転車', '文具', '調理器具',
+                                 'アウトドア', 'テクノロジー', 'AI', 'デバイス', '新発売', 'レビュー',
+                                 'ギア', 'オーディオ', 'スピーカー', '時計', '車', 'バイク'] },
   { cat: 'fashion',  keywords: ['ファッション', 'コーデ', '着こなし', 'ブランド', 'アパレル',
                                  'スニーカー', 'シューズ', 'バッグ', 'ジュエリー', 'アクセサリー',
-                                 'コレクション', 'ウェア', 'Tシャツ', 'デニム', 'アウター', 'セットアップ'] },
-  { cat: 'culture',  keywords: ['映画', '音楽', '書籍', 'マンガ', 'ゲーム', 'カルチャー', 'ポッドキャスト',
-                                 'インタビュー', '写真集', '雑誌', 'レコード', 'ライブ', 'フェス'] },
+                                 'コレクション', 'ウェア', 'Tシャツ', 'デニム'] },
+  { cat: 'culture',  keywords: ['映画', '音楽', '書籍', 'マンガ', 'ゲーム', 'ポッドキャスト', '写真',
+                                 'インタビュー', 'レコード', 'ライブ', 'カルチャー', '読書'] },
 ];
 
 function reclassify(title, excerpt, fallback) {
