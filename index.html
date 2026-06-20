@@ -296,9 +296,9 @@ footer {
 </div>
 
 <div class="mediafilter" id="mediafilter">
-  <button class="active" data-media="article">記事</button>
+  <button class="active" data-media="all">すべて</button>
+  <button data-media="article">記事</button>
   <button data-media="video">動画</button>
-  <button data-media="all">すべて</button>
 </div>
 
 <div class="feed" id="feed">
@@ -416,7 +416,7 @@ function parseCSV(text) {
 // ─── 状態 ─────────────────────────────────────────────────────────────────────
 let allData       = [];
 let currentFilter = 'all';
-let currentMedia  = 'article';
+let currentMedia  = 'all';
 let currentSearch = '';
 const PAGE_SIZE   = 24;
 let visibleCount  = PAGE_SIZE;
