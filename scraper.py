@@ -53,6 +53,24 @@ MAX_YT_VIDEOS          = 5  # YouTube通常取得
 MAX_YT_VIDEOS_BACKFILL = 30 # YouTube遡及取得
 DELAY                  = 2  # 秒
 
+NOISE_TITLES = {
+    'SHOPPING', 'HOROSCOPES', 'ELLE ACTIVE!', 'ELLE STYLE INSIDER',
+}
+NOISE_KEYWORDS = [
+    '送料無料キャンペーン', 'お直し料金改定', '休業のお知らせ',
+    'リニューアルオープンのお知らせ', '料金改定のお知らせ',
+]
+
+def is_noise_article(title):
+    if not title:
+        return True
+    if title.strip() in NOISE_TITLES:
+        return True
+    for kw in NOISE_KEYWORDS:
+        if kw in title:
+            return True
+    return False
+
 HEADERS = {
     'User-Agent': (
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
@@ -859,6 +877,8 @@ def fetch_via_rss(media, backfill=False):
                 title = clean_text(entry.get('title', ''))
                 if not url or not title:
                     continue
+                if is_noise_article(title):
+                    continue
                 if media.get('require_japanese') and not has_japanese_chars(title):
                     continue
                 articles.append({
@@ -962,6 +982,8 @@ def fetch_html_page(media, page_url, base_host, seen, max_count=MAX_ARTICLES):
             title = re.sub(title_strip_re, '', title).strip()
         if not title or len(title) < 4:
             continue
+        if is_noise_article(title):
+            continue
         if media.get('require_japanese') and not has_japanese_chars(title):
             continue
 
@@ -1001,6 +1023,8 @@ def fetch_html_page(media, page_url, base_host, seen, max_count=MAX_ARTICLES):
                     title = re.sub(title_strip_re, '', title).strip()
                 if not title or len(title) < 8:
                     continue
+                if is_noise_article(title):
+                    continue
                 if media.get('require_japanese') and not has_japanese_chars(title):
                     continue
                 articles.append({
@@ -1025,6 +1049,8 @@ def fetch_html_page(media, page_url, base_host, seen, max_count=MAX_ARTICLES):
                 if title_strip_re:
                     title = re.sub(title_strip_re, '', title).strip()
                 if not title or len(title) < 8:
+                    continue
+                if is_noise_article(title):
                     continue
                 if media.get('require_japanese') and not has_japanese_chars(title):
                     continue
