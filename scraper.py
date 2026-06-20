@@ -47,8 +47,11 @@ import feedparser
 BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_CSV   = os.path.join(BASE_DIR, 'life_curated_feed.csv')
 ERROR_LOG    = os.path.join(BASE_DIR, 'life_curated_errors.txt')
-MAX_ARTICLES = 5
-DELAY        = 2  # 秒
+MAX_ARTICLES          = 5   # 通常取得（最新）
+MAX_ARTICLES_BACKFILL = 50  # 遡及取得
+MAX_YT_VIDEOS          = 5  # YouTube通常取得
+MAX_YT_VIDEOS_BACKFILL = 30 # YouTube遡及取得
+DELAY                  = 2  # 秒
 
 HEADERS = {
     'User-Agent': (
@@ -690,10 +693,11 @@ def is_short_video(title, url, duration_sec):
 
 # ─── YouTube 動画取得 ─────────────────────────────────────────────────────────
 
-def fetch_youtube_channel(channel):
+def fetch_youtube_channel(channel, backfill=False):
     """YouTube Data API v3 でチャンネルの最新動画を取得する（ショート除外）。"""
-    handle = channel['handle']
-    name   = channel['name']
+    handle     = channel['handle']
+    name       = channel['name']
+    max_videos = MAX_YT_VIDEOS_BACKFILL if backfill else MAX_YT_VIDEOS
 
     # ① チャンネルのアップロード再生リストIDを取得
     resp = requests.get(
@@ -714,8 +718,8 @@ def fetch_youtube_channel(channel):
 
     wait()
 
-    # ② ショート除外後に MAX_YT_VIDEOS 件残るよう多めに取得
-    fetch_count = MAX_YT_VIDEOS * 3
+    # ② ショート除外後に max_videos 件残るよう多めに取得
+    fetch_count = min(max_videos * 2, 50)
     resp = requests.get(
         'https://www.googleapis.com/youtube/v3/playlistItems',
         params={
@@ -794,7 +798,7 @@ def fetch_youtube_channel(channel):
     skipped_shorts    = 0
     skipped_portrait  = 0
     for video_id in video_ids:
-        if len(articles) >= MAX_YT_VIDEOS:
+        if len(articles) >= max_videos:
             break
 
         info    = video_info.get(video_id, {})
@@ -835,12 +839,11 @@ def fetch_youtube_channel(channel):
 
 # ─── RSS 取得 ────────────────────────────────────────────────────────────────
 
-def fetch_via_rss(media):
+def fetch_via_rss(media, backfill=False):
+    max_count = MAX_ARTICLES_BACKFILL if backfill else MAX_ARTICLES
     for rss_url in media.get('rss_urls', []):
         wait()
         try:
-            # feedparser 自身の HTTP リクエストはタイムアウト不可のため
-            # requests で先にフェッチしてバイト列を渡す
             resp = requests.get(rss_url, headers=HEADERS, timeout=15)
             resp.raise_for_status()
             feed = feedparser.parse(resp.content)
@@ -849,8 +852,9 @@ def fetch_via_rss(media):
             if not feed.entries:
                 continue
 
+            entries = list(reversed(feed.entries))[:max_count] if backfill else feed.entries[:max_count]
             articles = []
-            for entry in feed.entries[:MAX_ARTICLES]:
+            for entry in entries:
                 url   = entry.get('link', '').strip()
                 title = clean_text(entry.get('title', ''))
                 if not url or not title:
@@ -876,8 +880,8 @@ def fetch_via_rss(media):
 
 # ─── HTML フォールバック ───────────────────────────────────────────────────────
 
-def fetch_via_html(media):
-
+def fetch_via_html(media, backfill=False):
+    max_count = MAX_ARTICLES_BACKFILL if backfill else MAX_ARTICLES
     page_urls = media.get('start_urls') or [media['base_url']]
     seen = set()
     articles = []
@@ -885,14 +889,14 @@ def fetch_via_html(media):
     base_host = urlparse(base).netloc
 
     for page_url in page_urls:
-        page_articles = fetch_html_page(media, page_url, base_host, seen)
+        page_articles = fetch_html_page(media, page_url, base_host, seen, max_count)
         articles.extend(page_articles)
-        if len(articles) >= MAX_ARTICLES:
+        if len(articles) >= max_count:
             break
-    return articles[:MAX_ARTICLES]
+    return articles[:max_count]
 
 
-def fetch_html_page(media, page_url, base_host, seen):
+def fetch_html_page(media, page_url, base_host, seen, max_count=MAX_ARTICLES):
     wait()
     resp = requests.get(page_url, headers=HEADERS, timeout=15, allow_redirects=True)
     resp.raise_for_status()
@@ -973,7 +977,7 @@ def fetch_html_page(media, page_url, base_host, seen):
             'date':      '',
             'thumbnail': '',
         })
-        if len(articles) >= MAX_ARTICLES:
+        if len(articles) >= max_count:
             break
 
     if not articles:
@@ -1008,7 +1012,7 @@ def fetch_html_page(media, page_url, base_host, seen):
                     'date':      '',
                     'thumbnail': '',
                 })
-                if len(articles) >= MAX_ARTICLES:
+                if len(articles) >= max_count:
                     break
         else:
             for a_tag in soup.find_all('a', href=True):
@@ -1033,7 +1037,7 @@ def fetch_html_page(media, page_url, base_host, seen):
                     'date':      '',
                     'thumbnail': '',
                 })
-                if len(articles) >= MAX_ARTICLES:
+                if len(articles) >= max_count:
                     break
 
     return articles
@@ -1041,7 +1045,6 @@ def fetch_html_page(media, page_url, base_host, seen):
 
 # ─── メイン処理 ──────────────────────────────────────────────────────────────
 
-MAX_STORED  = 1000   # CSVに保持する最大記事数
 FIELDNAMES  = ['category', 'source', 'source_type', 'title', 'url', 'excerpt', 'date', 'thumbnail']
 
 
@@ -1060,43 +1063,45 @@ def load_existing_csv():
 
 
 def main():
-    errors      = []
-    new_fetched = []
+    errors       = []
+    new_normal   = []
+    new_backfill = []
 
     print('=' * 60)
     print('  LIFE CURATED scraper.py  記事収集開始')
-    print(f'  対象: {len(MEDIA_LIST)} 媒体 / 各最大 {MAX_ARTICLES} 記事')
+    print(f'  対象: {len(MEDIA_LIST)} 媒体')
     print(f'  出力: {OUTPUT_CSV}')
     print('=' * 60)
 
-    # ── 既存CSV読み込み ───────────────────────────────────────────
     existing   = load_existing_csv()
     exist_urls = {a['url'] for a in existing}
     print(f'\n既存件数: {len(existing)} 件')
 
-    # ── 各媒体から新着取得 ────────────────────────────────────────
+    # ─── ① 通常取得（最新5件・OGP取得・Claude API分類） ──────────
+    print(f'\n{"─" * 60}')
+    print(f'  ① 通常取得（各最大 {MAX_ARTICLES} 件 / Claude API分類）')
+    print(f'{"─" * 60}')
+
     for media in MEDIA_LIST:
         source = media['source']
         print(f'\n[{source}] ({media["category"]}) 取得中...')
-
         try:
             articles = []
             method   = ''
 
-            articles, used_rss = fetch_via_rss(media)
+            articles, used_rss = fetch_via_rss(media, backfill=False)
             if articles:
                 method = f'RSS: {used_rss}'
                 print(f'  RSS 成功 ({len(articles)} 件)')
             else:
                 print('  RSS 失敗 → HTML スクレイピング')
-                articles = fetch_via_html(media)
+                articles = fetch_via_html(media, backfill=False)
                 method   = 'HTML scraping'
                 if articles:
                     print(f'  HTML 成功 ({len(articles)} 件)')
                 else:
                     raise ValueError('記事が 1 件も取得できませんでした')
 
-            # require_japanese フラグが立っている媒体は日本語タイトル以外を除外
             if media.get('require_japanese'):
                 before   = len(articles)
                 articles = [a for a in articles if has_japanese_chars(a['title'])]
@@ -1114,7 +1119,6 @@ def main():
                 status = '✓' if article.get('thumbnail') else '–'
                 print(f'    [{status}] {article["title"][:45]}')
 
-            # Claude API でまとめて分類（フォールバック：キーワードマッチ）
             claude_cats = classify_with_claude_batch(articles)
             if claude_cats:
                 print(f'  Claude 分類: {" / ".join(c or "?" for c in claude_cats)}')
@@ -1123,65 +1127,136 @@ def main():
                     article['category'] = claude_cats[i]
                 else:
                     article['category'] = classify_category(article['title'], article.get('excerpt', ''))
-            new_fetched.extend(articles)
+            new_normal.extend(articles)
 
         except Exception as e:
             msg = f'[{source}] {method or "取得"} エラー: {e}'
             print(f'  ✗ {msg}')
             errors.append(msg)
 
-    # ── YouTube 動画取得 ──────────────────────────────────────────
+    # ─── ② 遡及取得（過去記事・キーワード分類・OGPなし） ─────────
     print(f'\n{"─" * 60}')
-    print(f'  YouTube 動画取得（{len(YOUTUBE_CHANNELS)} チャンネル / 各最大 {MAX_YT_VIDEOS} 本）')
+    print(f'  ② 遡及取得（各最大 {MAX_ARTICLES_BACKFILL} 件 / キーワード分類）')
+    print(f'{"─" * 60}')
+
+    seen_so_far = exist_urls | {a['url'] for a in new_normal}
+
+    for media in MEDIA_LIST:
+        source = media['source']
+        print(f'\n[{source}] 遡及取得中...')
+        try:
+            articles = []
+
+            articles, _ = fetch_via_rss(media, backfill=True)
+            if articles:
+                print(f'  RSS ({len(articles)} 件)')
+            else:
+                articles = fetch_via_html(media, backfill=True)
+                if articles:
+                    print(f'  HTML ({len(articles)} 件)')
+
+            added_bf = 0
+            for article in articles:
+                url = article.get('url', '')
+                if not url or url in seen_so_far:
+                    continue
+                article['category'] = classify_category(article['title'], article.get('excerpt', ''))
+                new_backfill.append(article)
+                seen_so_far.add(url)
+                added_bf += 1
+            if added_bf:
+                print(f'  遡及新規: {added_bf} 件')
+
+        except Exception as e:
+            msg = f'[{source}] 遡及エラー: {e}'
+            print(f'  ✗ {msg}')
+            errors.append(msg)
+
+    # ─── ③ YouTube通常取得（最新5件・Claude API分類） ────────────
+    print(f'\n{"─" * 60}')
+    print(f'  ③ YouTube 通常取得（各最大 {MAX_YT_VIDEOS} 件 / Claude API分類）')
     print(f'{"─" * 60}')
 
     for channel in YOUTUBE_CHANNELS:
         name = channel['name']
         print(f'\n[{name}] ({channel["handle"]}) 取得中...')
         try:
-            videos = fetch_youtube_channel(channel)
+            videos = fetch_youtube_channel(channel, backfill=False)
+            claude_cats = classify_with_claude_batch(videos)
+            if claude_cats:
+                print(f'  Claude 分類: {" / ".join(c or "?" for c in claude_cats)}')
+            for i, v in enumerate(videos):
+                if claude_cats and i < len(claude_cats) and claude_cats[i]:
+                    v['category'] = claude_cats[i]
             print(f'  取得: {len(videos)} 件')
             for v in videos:
                 print(f'    - [{v["category"]}] {v["title"][:50]}')
-            new_fetched.extend(videos)
+            new_normal.extend(videos)
         except Exception as e:
             msg = f'[YouTube/{name}] エラー: {e}'
             print(f'  ✗ {msg}')
             errors.append(msg)
 
-    # ── 重複排除・マージ・ソート・上限カット ───────────────────────
-    added   = 0
-    skipped = 0
-    for article in new_fetched:
+    # ─── ④ YouTube遡及取得（最大30件・キーワード分類） ──────────
+    print(f'\n{"─" * 60}')
+    print(f'  ④ YouTube 遡及取得（各最大 {MAX_YT_VIDEOS_BACKFILL} 件 / キーワード分類）')
+    print(f'{"─" * 60}')
+
+    seen_for_yt = exist_urls | {a['url'] for a in new_normal} | {a['url'] for a in new_backfill}
+
+    for channel in YOUTUBE_CHANNELS:
+        name = channel['name']
+        print(f'\n[{name}] 遡及取得中...')
+        try:
+            videos = fetch_youtube_channel(channel, backfill=True)
+            added_bf = 0
+            for v in videos:
+                url = v.get('url', '')
+                if not url or url in seen_for_yt:
+                    continue
+                new_backfill.append(v)
+                seen_for_yt.add(url)
+                added_bf += 1
+            if added_bf:
+                print(f'  遡及新規: {added_bf} 件')
+        except Exception as e:
+            msg = f'[YouTube/{name}] 遡及エラー: {e}'
+            print(f'  ✗ {msg}')
+            errors.append(msg)
+
+    # ─── ⑤ マージ・ソート・CSV保存（上限なし） ──────────────────
+    added_normal   = 0
+    added_backfill = 0
+    skipped        = 0
+
+    for article in new_normal:
         url = article.get('url', '')
         if not url or url in exist_urls:
             skipped += 1
             continue
         existing.append(article)
         exist_urls.add(url)
-        added += 1
+        added_normal += 1
 
-    # 日付の新しい順にソート（日付なし記事は末尾）
+    for article in new_backfill:
+        url = article.get('url', '')
+        if not url or url in exist_urls:
+            continue
+        existing.append(article)
+        exist_urls.add(url)
+        added_backfill += 1
+
     existing.sort(key=lambda a: a.get('date') or '', reverse=True)
 
-    # 上限超えを古い方から削除
-    trimmed = 0
-    if len(existing) > MAX_STORED:
-        trimmed   = len(existing) - MAX_STORED
-        existing  = existing[:MAX_STORED]
-
-    # ── CSV書き出し ───────────────────────────────────────────────
     with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction='ignore', restval='')
         writer.writeheader()
         writer.writerows(existing)
 
-    # ── サマリー ─────────────────────────────────────────────────
     print('\n' + '=' * 60)
-    print(f'  新規追加:     {added} 件')
+    print(f'  通常新規追加: {added_normal} 件')
+    print(f'  遡及新規追加: {added_backfill} 件')
     print(f'  重複スキップ: {skipped} 件')
-    if trimmed:
-        print(f'  上限超え削除: {trimmed} 件（上限 {MAX_STORED} 件）')
     print(f'  合計件数:     {len(existing)} 件 → {OUTPUT_CSV}')
 
     if errors:
