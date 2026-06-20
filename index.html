@@ -646,18 +646,16 @@ async function loadCSV() {
     if (rows.length === 0) throw new Error('no data');
 
     allData = rows.map(r => {
-      const catLabel   = r.category || r['カテゴリ'] || '';
-      const source     = r.source   || r['メディア名'] || '';
-      const mappedCat  = CATEGORY_LABEL_TO_KEY[catLabel] || 'interior';
-      // Elle Decor Japan: インテリア固定フォールバックを外し keyword で判定
-      // （「デザイン」「空間」等が含まれなければ FASHION/CULTURE に振り分け）
-      const fallback   = source.includes('Elle Decor') ? 'culture' : mappedCat;
-      const title      = r.title    || r['タイトル'] || '';
-      const excerpt    = r.excerpt  || r['概要']     || '';
-      const rawDate    = r.date     || r['日付']     || '';
-      const dispDate   = rawDate.length >= 10
+      const catLabel = r.category || r['カテゴリ'] || '';
+      const source   = r.source   || r['メディア名'] || '';
+      const title    = r.title    || r['タイトル'] || '';
+      const excerpt  = r.excerpt  || r['概要']     || '';
+      const rawDate  = r.date     || r['日付']     || '';
+      const dispDate = rawDate.length >= 10
         ? rawDate.slice(5, 10).replace('-', '.')
         : rawDate;
+      // CSVのcategory値をそのまま使用（CATS未定義の旧日本語名はマッピング変換）
+      const catKey = CATS[catLabel] ? catLabel : (CATEGORY_LABEL_TO_KEY[catLabel] || 'culture');
       return {
         source,
         source_type: r.source_type || '',
@@ -666,7 +664,7 @@ async function loadCSV() {
         rawDate,
         date:      dispDate,
         excerpt,
-        category:  reclassify(title, excerpt, fallback),
+        category:  catKey,
         thumbnail: r.thumbnail || r['サムネイル'] || '',
       };
     }).filter(d => isValidArticle(d.title));
