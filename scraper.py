@@ -483,6 +483,68 @@ MEDIA_LIST = [
         'require_japanese': True,
         'title_strip_re': r'^(Art&Design|Lifestyle|Gourmet|Watches|Fashion|Travel|Culture|Art|Beauty|Design)\s+',
     },
+    {
+        'category': 'fashion',
+        'source':   'GINZA',
+        'base_url': 'https://ginzamag.com',
+        'rss_urls': [],
+        'start_urls': ['https://ginzamag.com/'],
+        'url_path_filter': '/categories/',
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'カルチャー・アート',
+        'source':   'OLLIE',
+        'base_url': 'https://ollie-magazine.com',
+        'rss_urls': ['https://ollie-magazine.com/feed'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'カルチャー・アート',
+        'source':   '&Premium',
+        'base_url': 'https://andpremium.jp',
+        'rss_urls': ['https://andpremium.jp/feed/'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'カルチャー・アート',
+        'source':   'GO OUT Web',
+        'base_url': 'https://web.goout.jp',
+        'rss_urls': ['https://web.goout.jp/feed'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'カルチャー・アート',
+        'source':   'CINRA',
+        'base_url': 'https://www.cinra.net',
+        'rss_urls': ['https://www.cinra.net/feed'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'カルチャー・アート',
+        'source':   'EYE SCREAM',
+        'base_url': 'https://eyescream.jp',
+        'rss_urls': ['https://eyescream.jp/feed'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
 ]
 
 # ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
