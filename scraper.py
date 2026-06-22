@@ -422,12 +422,12 @@ MEDIA_LIST = [
     #     'url_path_filter': '/view/news/2',
     #     'title_prefer_shorter': True,
     # },
-    {
-        'category': 'product',
-        'source':   'PHILE WEB',
-        'base_url': 'https://www.phileweb.com',
-        'rss_urls': ['https://www.phileweb.com/rss.php'],
-    },
+    # {
+    #     'category': 'product',
+    #     'source':   'PHILE WEB',
+    #     'base_url': 'https://www.phileweb.com',
+    #     'rss_urls': ['https://www.phileweb.com/rss.php'],
+    # },  # オーディオ専門のため除外
     {
         'category': 'travel',
         'source':   'colocal',
