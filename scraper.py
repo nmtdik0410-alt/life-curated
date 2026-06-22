@@ -163,20 +163,20 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|article|item|card)'},
         ],
     },
-    {
-        'category': 'カフェ・スポット',
-        'source':   '&Premium Web',
-        'base_url': 'https://www.machikado-creative.jp',
-        'rss_urls': [
-            'https://www.machikado-creative.jp/feed/',
-            'https://www.machikado-creative.jp/feed',
-            'https://www.machikado-creative.jp/rss.xml',
-        ],
-        'article_selectors': [
-            {'tag': 'article', 'class_re': r''},
-            {'tag': 'div',     'class_re': r'(post|entry|article|item|card)'},
-        ],
-    },
+    # {
+    #     'category': 'カフェ・スポット',
+    #     'source':   '&Premium Web',
+    #     'base_url': 'https://www.machikado-creative.jp',
+    #     'rss_urls': [
+    #         'https://www.machikado-creative.jp/feed/',
+    #         'https://www.machikado-creative.jp/feed',
+    #         'https://www.machikado-creative.jp/rss.xml',
+    #     ],
+    #     'article_selectors': [
+    #         {'tag': 'article', 'class_re': r''},
+    #         {'tag': 'div',     'class_re': r'(post|entry|article|item|card)'},
+    #     ],
+    # },  # 街角diaryのみ配信のため除外
     {
         'category': 'イベント',
         'source':   'POPEYE Web',
