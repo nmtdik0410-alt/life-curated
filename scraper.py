@@ -59,15 +59,23 @@ NOISE_TITLES = {
 NOISE_KEYWORDS = [
     '送料無料キャンペーン', 'お直し料金改定', '休業のお知らせ',
     'リニューアルオープンのお知らせ', '料金改定のお知らせ',
+    'PR記事', 'タイアップ', 'Sponsored', 'Amazon Pickup', 'Buy PR',
+    'アンケート', '※本記事はPR', '【PR】', '【広告】',
+]
+NOISE_EXCERPT_KEYWORDS = [
+    '本記事はPRです', '本記事は広告', 'プロモーション記事',
 ]
 
-def is_noise_article(title):
+def is_noise_article(title, excerpt=''):
     if not title:
         return True
     if title.strip() in NOISE_TITLES:
         return True
     for kw in NOISE_KEYWORDS:
         if kw in title:
+            return True
+    for kw in NOISE_EXCERPT_KEYWORDS:
+        if kw in (excerpt or ''):
             return True
     return False
 
@@ -1125,7 +1133,7 @@ def fetch_html_page(media, page_url, base_host, seen, max_count=MAX_ARTICLES):
                     title = re.sub(title_strip_re, '', title).strip()
                 if not title or len(title) < 8:
                     continue
-                if is_noise_article(title):
+                if is_noise_article(title, excerpt):
                     continue
                 if media.get('require_japanese') and not has_japanese_chars(title):
                     continue
