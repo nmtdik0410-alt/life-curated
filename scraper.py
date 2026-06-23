@@ -468,12 +468,12 @@ MEDIA_LIST = [
         'base_url': 'https://vague.style',
         'rss_urls': ['https://vague.style/feed/'],
     },
-    {
-        'category': 'product',
-        'source':   'LIFEHACKER JP',
-        'base_url': 'https://www.lifehacker.jp',
-        'rss_urls': ['https://www.lifehacker.jp/feed/'],
-    },
+    # {
+    #     'category': 'product',
+    #     'source':   'LIFEHACKER JP',
+    #     'base_url': 'https://www.lifehacker.jp',
+    #     'rss_urls': ['https://www.lifehacker.jp/feed/'],
+    # },  # オミット
     # UOMO: トップページがJS重依存のため記事取得不可、保留
     # {
     #     'category': 'fashion',
