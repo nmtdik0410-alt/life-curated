@@ -602,7 +602,7 @@ YOUTUBE_CHANNELS = [
     {'handle': '@Actuskikaku',        'name': 'ACTUS'},
     {'handle': '@CONNECT-Design',     'name': 'CONNECT北欧'},
     {'handle': '@TOKYOROOMS',         'name': 'TOKYOROOMS'},
-    {'handle': '@c.uragawa',          'name': 'クリエイティブの裏側'},
+    # {'handle': '@c.uragawa',          'name': 'クリエイティブの裏側'},  # オミット
     {'handle': '@hyggescape',         'name': 'HYGGESCAPE'},
     {'handle': '@y_interior',         'name': 'ゆっくりインテリア(カジマグ)'},
     {'handle': '@McGuffin2017',       'name': 'McGuffin'},
