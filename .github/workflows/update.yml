@@ -48,4 +48,5 @@ jobs:
           # last_updated.txtは毎回内容が変わるため常にコミット対象
           git add last_updated.txt
           git commit -m "chore: update feed $(TZ=Asia/Tokyo date +'%Y-%m-%d')"
-          git push
+          git pull --rebase origin main || true
+          git push --force-with-lease
