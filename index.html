@@ -210,7 +210,8 @@ body {
   display: flex; align-items: center; gap: 7px;
 }
 .card .cat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.card .src { font-size: 11px; font-weight: 500; color: var(--ink-faint); }
+.card .src { font-size: 11px; font-weight: 500; color: var(--ink-faint); cursor: pointer; }
+.card .src:hover { color: var(--ink-soft); }
 .card .date {
   font-size: 10.5px; color: var(--ink-faint);
   font-family: 'JetBrains Mono', monospace;
@@ -253,6 +254,26 @@ body {
   transition: color .15s;
 }
 .cat-more-btn:hover { color: var(--ink); }
+
+/* ─── SOURCE FILTER BANNER ─── */
+#source-banner {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.source-banner-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 8px 28px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: var(--ink-soft);
+}
+.source-banner-close {
+  margin-left: auto;
+  background: none; border: 1px solid var(--line); cursor: pointer;
+  font-size: 12px; color: var(--ink-faint);
+  padding: 3px 8px; border-radius: 4px;
+  line-height: 1.4; transition: all .15s;
+}
+.source-banner-close:hover { background: var(--line-soft); color: var(--ink); }
 
 /* ─── EMPTY / FOOTER ─── */
 .empty {
@@ -305,6 +326,13 @@ footer {
   <button class="active" data-media="all">すべて</button>
   <button data-media="article">記事</button>
   <button data-media="video">動画</button>
+</div>
+
+<div id="source-banner" style="display:none">
+  <div class="source-banner-inner">
+    <span id="source-banner-text"></span>
+    <button class="source-banner-close" id="source-banner-close">✕</button>
+  </div>
 </div>
 
 <div class="feed" id="feed">
@@ -424,6 +452,7 @@ let allData       = [];
 let currentFilter = 'all';
 let currentMedia  = 'all';
 let currentSearch = '';
+let currentSource = '';
 const PAGE_SIZE   = 24;
 let visibleCount  = PAGE_SIZE;
 
@@ -497,14 +526,28 @@ function render() {
   const feed = document.getElementById('feed');
   feed.innerHTML = '';
 
+  // ── ソースフィルターバナー ──
+  const banner     = document.getElementById('source-banner');
+  const bannerText = document.getElementById('source-banner-text');
+  if (currentSource) {
+    banner.style.display = '';
+    bannerText.textContent = `← ${currentSource} の記事を表示中`;
+  } else {
+    banner.style.display = 'none';
+  }
+
   const mediaFiltered = currentMedia === 'all' ? allData
     : currentMedia === 'video' ? allData.filter(d => d.source_type === 'YouTube')
     : allData.filter(d => !d.source_type || d.source_type !== 'YouTube');
 
+  const sourceFiltered = currentSource
+    ? mediaFiltered.filter(d => d.source === currentSource)
+    : mediaFiltered;
+
   // ── 検索モード ──
   if (currentSearch) {
     const q = currentSearch.toLowerCase();
-    let results = mediaFiltered.filter(d =>
+    let results = sourceFiltered.filter(d =>
       d.title.toLowerCase().includes(q) ||
       d.excerpt.toLowerCase().includes(q) ||
       d.source.toLowerCase().includes(q)
@@ -544,7 +587,7 @@ function render() {
     // ── すべて表示: カテゴリごとに最新3件 + 「もっと見る」ボタン ──
     let hasAny = false;
     Object.keys(CATS).forEach(key => {
-      const catItems = mediaFiltered.filter(d => d.category === key);
+      const catItems = sourceFiltered.filter(d => d.category === key);
       if (catItems.length === 0) return;
       hasAny = true;
       renderSection(feed, key, catItems.slice(0, 3), true, catItems.length);
@@ -554,7 +597,7 @@ function render() {
     }
   } else {
     // ── 単一カテゴリ: ページネーション付き全件表示 ──
-    const filtered = mediaFiltered.filter(d => d.category === currentFilter);
+    const filtered = sourceFiltered.filter(d => d.category === currentFilter);
     const visible   = filtered.slice(0, visibleCount);
 
     if (visible.length === 0) {
@@ -631,6 +674,23 @@ document.addEventListener('click', e => {
       !e.target.closest('.topbar') && currentSearch === '') {
     closeSearch();
   }
+});
+
+// ─── ソースクリックフィルター ────────────────────────────────────────────────
+document.getElementById('feed').addEventListener('click', e => {
+  const srcEl = e.target.closest('.src');
+  if (!srcEl) return;
+  e.preventDefault();
+  e.stopPropagation();
+  currentSource = srcEl.textContent.trim();
+  visibleCount  = PAGE_SIZE;
+  render();
+});
+
+document.getElementById('source-banner-close').addEventListener('click', () => {
+  currentSource = '';
+  visibleCount  = PAGE_SIZE;
+  render();
 });
 
 // ─── CSV fetch 自動読み込み ───────────────────────────────────────────────────
