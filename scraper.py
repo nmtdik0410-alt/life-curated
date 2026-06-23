@@ -766,13 +766,17 @@ def classify_with_claude_batch(articles):
     """1ソース分の記事をClaude APIでまとめて分類。失敗時はNoneを返す。"""
     if not ANTHROPIC_CLIENT or not articles:
         return None
-    prompt = '\n'.join(f'{i+1}. {a["title"]}' for i, a in enumerate(articles))
+    content = '\n'.join(
+        f"{i+1}. タイトル：{a['title']}"
+        + (f"\n   タグ：{a['tags']}" if a.get('tags') else '')
+        for i, a in enumerate(articles)
+    )
     try:
         msg = ANTHROPIC_CLIENT.messages.create(
             model='claude-haiku-4-5-20251001',
             max_tokens=50,
             system=_CLAUDE_SYSTEM,
-            messages=[{'role': 'user', 'content': prompt}],
+            messages=[{'role': 'user', 'content': content}],
         )
         cats = []
         for line in msg.content[0].text.strip().split('\n'):
@@ -808,22 +812,42 @@ def get_unsplash_image(category):
         return ''
 
 
-# ─── OGP 画像取得 ────────────────────────────────────────────────────────────
+# ─── OGP データ取得（画像＋タグ） ──────────────────────────────────────────
 
-def get_ogp_image(url):
+def get_ogp_data(url):
+    """OGP画像とページ内タグを同時取得する"""
     wait()
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15, allow_redirects=True)
         resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, 'lxml')
-        return get_meta_content(soup, [
+        soup = BeautifulSoup(resp.content, 'lxml')
+
+        image = get_meta_content(soup, [
             {'property': 'og:image'},
             {'name': 'twitter:image'},
             {'name': 'twitter:image:src'},
         ])
+
+        tags = []
+        tag_selectors = [
+            'a.tag', 'a.article-tag', 'a.post-tag',
+            'span.tag', 'span.article-tag',
+            '.tags a', '.tag-list a', '.article-tags a',
+            '.category a', '.categories a',
+            '[class*="tag"] a', '[class*="Tag"] a',
+        ]
+        for selector in tag_selectors:
+            found = soup.select(selector)
+            if found:
+                tags = [t.get_text(strip=True) for t in found[:5]]
+                tags = [t for t in tags if t and len(t) < 20]
+                if tags:
+                    break
+
+        return image, tags[:5]
     except Exception:
         pass
-    return ''
+    return '', []
 
 
 # ─── YouTube ショート判定 ────────────────────────────────────────────────────
@@ -1221,7 +1245,7 @@ def fetch_html_page(media, page_url, base_host, seen, max_count=MAX_ARTICLES):
 
 # ─── メイン処理 ──────────────────────────────────────────────────────────────
 
-FIELDNAMES  = ['category', 'source', 'source_type', 'title', 'url', 'excerpt', 'date', 'thumbnail']
+FIELDNAMES  = ['category', 'source', 'source_type', 'title', 'url', 'excerpt', 'date', 'thumbnail', 'tags']
 
 
 def load_existing_csv():
@@ -1289,9 +1313,14 @@ def main():
             for article in articles:
                 try:
                     if article['url'] and not article.get('thumbnail'):
-                        article['thumbnail'] = get_ogp_image(article['url'])
+                        image, tags = get_ogp_data(article['url'])
+                        article['thumbnail'] = image
+                        article['tags'] = ', '.join(tags)
+                    else:
+                        article.setdefault('tags', '')
                 except Exception:
                     article['thumbnail'] = ''
+                    article['tags'] = ''
                 status = '✓' if article.get('thumbnail') else '–'
                 print(f'    [{status}] {article["title"][:45]}')
 
@@ -1435,9 +1464,11 @@ def main():
     unsplash_added = 0
     for row in thumb_targets[:100]:
         try:
-            thumb = get_ogp_image(row['url'])
+            thumb, tags = get_ogp_data(row['url'])
             if thumb:
                 row['thumbnail'] = thumb
+                if not row.get('tags') and tags:
+                    row['tags'] = ', '.join(tags)
                 ogp_added += 1
             elif UNSPLASH_ACCESS_KEY:
                 thumb = get_unsplash_image(row.get('category', 'culture'))
