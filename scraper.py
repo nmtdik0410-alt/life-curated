@@ -61,9 +61,11 @@ NOISE_KEYWORDS = [
     'リニューアルオープンのお知らせ', '料金改定のお知らせ',
     'PR記事', 'タイアップ', 'Sponsored', 'Amazon Pickup', 'Buy PR',
     'アンケート', '※本記事はPR', '【PR】', '【広告】',
+    'Amazonタイムセール', 'Amazonセール', 'タイムセール', 'お買い得', 'セール情報', '割引',
 ]
 NOISE_EXCERPT_KEYWORDS = [
     '本記事はPRです', '本記事は広告', 'プロモーション記事',
+    'かいサポ', 'お買いものサポーター', 'Amazon', 'Amazonタイムセール', 'プライムデー',
 ]
 
 def is_noise_article(title, excerpt=''):
