@@ -553,6 +553,46 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
         ],
     },
+    {
+        'category': 'インテリア',
+        'source':   'Replan',
+        'base_url': 'https://replan.ne.jp',
+        'rss_urls': ['https://replan.ne.jp/feed'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'インテリア',
+        'source':   'モダンリビング',
+        'base_url': 'https://modernliving.jp',
+        'rss_urls': ['https://modernliving.jp/rss/default.xml'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'インテリア',
+        'source':   'SUUMO Journal',
+        'base_url': 'https://suumo.jp',
+        'rss_urls': ['https://suumo.jp/journal/feed'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
+    {
+        'category': 'インテリア',
+        'source':   '天然生活web',
+        'base_url': 'https://tennenseikatsu.jp',
+        'rss_urls': ['https://tennenseikatsu.jp/_rss/rss20.xml'],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
+        ],
+    },
 ]
 
 # ─── YouTube チャンネル定義 ──────────────────────────────────────────────────
