@@ -385,6 +385,67 @@ body {
 }
 .source-banner-close:hover { background: var(--line-soft); color: var(--ink); }
 
+/* ─── NEW セクション（横スクロール） ─── */
+.new-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 20px 28px 4px;
+}
+.new-section-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.new-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .12em;
+  background: var(--ink); color: #fff;
+  padding: 3px 9px; border-radius: 4px;
+}
+.new-sub {
+  font-size: 11.5px; color: var(--ink-faint);
+}
+.new-scroll {
+  display: flex; gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.new-scroll::-webkit-scrollbar { height: 4px; }
+.new-scroll::-webkit-scrollbar-track { background: transparent; }
+.new-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+.new-card {
+  flex: 0 0 190px;
+  text-decoration: none; color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow .15s, border-color .15s;
+}
+.new-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.08); border-color: #d0d0d0; }
+.new-card-thumb {
+  width: 100%; height: 110px;
+  object-fit: cover; display: block;
+}
+.new-card-thumb-placeholder {
+  width: 100%; height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,.75);
+  letter-spacing: .1em;
+}
+.new-card-body { padding: 10px 11px 11px; }
+.new-card-src {
+  font-size: 10.5px; color: var(--ink-faint);
+  display: flex; align-items: center; gap: 5px;
+  margin-bottom: 5px;
+}
+.new-cat-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.new-card-title {
+  font-size: 12px; font-weight: 600; line-height: 1.45;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
 /* ─── EMPTY / FOOTER ─── */
 .empty {
   grid-column: 1/-1; padding: 32px 16px; text-align: center;
@@ -423,13 +484,13 @@ footer {
   <button class="active" data-cat="all"><span class="sw" style="background:var(--ink)"></span>すべて</button>
   <button data-cat="interior"><span class="sw" style="background:var(--c-interior)"></span>INTERIOR</button>
   <button data-cat="design"><span class="sw" style="background:var(--c-design)"></span>DESIGN</button>
-  <button data-cat="food"><span class="sw" style="background:var(--c-food)"></span>FOOD</button>
-  <button data-cat="travel"><span class="sw" style="background:var(--c-travel)"></span>TRAVEL</button>
-  <button data-cat="event"><span class="sw" style="background:var(--c-event)"></span>EVENT</button>
+  <button data-cat="art"><span class="sw" style="background:var(--c-art)"></span>ART</button>
+  <button data-cat="culture"><span class="sw" style="background:var(--c-culture)"></span>CULTURE</button>
   <button data-cat="product"><span class="sw" style="background:var(--c-product)"></span>PRODUCT</button>
   <button data-cat="fashion"><span class="sw" style="background:var(--c-fashion)"></span>FASHION</button>
-  <button data-cat="culture"><span class="sw" style="background:var(--c-culture)"></span>CULTURE</button>
-  <button data-cat="art"><span class="sw" style="background:var(--c-art)"></span>ART</button>
+  <button data-cat="travel"><span class="sw" style="background:var(--c-travel)"></span>TRAVEL</button>
+  <button data-cat="food"><span class="sw" style="background:var(--c-food)"></span>FOOD</button>
+  <button data-cat="event"><span class="sw" style="background:var(--c-event)"></span>EVENT</button>
 </div>
 
 <div class="mediafilter" id="mediafilter">
@@ -467,6 +528,9 @@ const CATS = {
   culture:  { label: 'CULTURE',  accent: 'var(--c-culture)'  },
   art:      { label: 'ART',      accent: 'var(--c-art)'      },
 };
+
+// カテゴリ表示順
+const CAT_ORDER = ['interior', 'design', 'art', 'culture', 'product', 'fashion', 'travel', 'food', 'event'];
 
 // スクレイパーのカテゴリ列 → UIカテゴリキー
 const CATEGORY_LABEL_TO_KEY = {
@@ -647,6 +711,45 @@ function buildSubCard(item, accent) {
   return a;
 }
 
+function renderNewSection(container, items) {
+  const sec = document.createElement('div');
+  sec.className = 'new-section';
+  sec.innerHTML = `
+    <div class="new-section-head">
+      <span class="new-label">NEW</span>
+      <span class="new-sub">最新 ${items.length} 件</span>
+    </div>
+  `;
+  const scroll = document.createElement('div');
+  scroll.className = 'new-scroll';
+  items.forEach(item => {
+    const catColor = `var(--c-${item.category || 'culture'})`;
+    const dot = CATS[item.category]?.accent || 'var(--ink)';
+    const a = document.createElement('a');
+    a.className = 'new-card';
+    a.href = item.url || '#';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    const thumbHtml = item.thumbnail
+      ? `<img class="new-card-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy"
+             onerror="this.outerHTML='<div class=\\'new-card-thumb-placeholder\\' style=\\'background:${catColor}\\'>${(item.category||'CULTURE').toUpperCase()}</div>'">`
+      : `<div class="new-card-thumb-placeholder" style="background:${catColor}">${(item.category||'CULTURE').toUpperCase()}</div>`;
+    a.innerHTML = `
+      ${thumbHtml}
+      <div class="new-card-body">
+        <div class="new-card-src">
+          <span class="new-cat-dot" style="background:${dot}"></span>
+          <span class="src">${esc(item.source)}</span>
+          ${item.date ? `<span>· ${esc(item.date)}</span>` : ''}
+        </div>
+        <div class="new-card-title">${esc(item.title)}</div>
+      </div>`;
+    scroll.appendChild(a);
+  });
+  sec.appendChild(scroll);
+  container.appendChild(sec);
+}
+
 // showMoreBtn: true のとき「もっと見る」ボタンを追加、totalCount は見出しに表示する件数
 function renderSection(container, key, items, showMoreBtn = false, totalCount = null) {
   const cfg   = CATS[key];
@@ -763,9 +866,13 @@ function render() {
   }
 
   if (currentFilter === 'all') {
-    // ── すべて表示: カテゴリごとに最新3件 + 「もっと見る」ボタン ──
+    // ── すべて表示: NEWセクション + カテゴリごとに最新3件 + 「もっと見る」ボタン ──
+    if (!currentSearch && !currentSource) {
+      const newItems = sourceFiltered.slice(0, 10);
+      if (newItems.length > 0) renderNewSection(feed, newItems);
+    }
     let hasAny = false;
-    Object.keys(CATS).forEach(key => {
+    CAT_ORDER.forEach(key => {
       const catItems = sourceFiltered.filter(d => d.category === key);
       if (catItems.length === 0) return;
       hasAny = true;
