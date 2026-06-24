@@ -460,6 +460,57 @@ body {
   overflow: hidden;
 }
 
+/* ─── 2列大カードグリッド（カテゴリ選択時） ─── */
+.cards-large {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.card-large {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 0.5px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: opacity .15s;
+}
+.card-large:hover { opacity: .8; }
+.card-large .large-thumb {
+  width: 100%; height: 200px;
+  object-fit: cover; display: block;
+}
+.card-large .large-placeholder {
+  width: 100%; height: 200px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  color: rgba(255,255,255,.7);
+}
+.card-large .large-body {
+  padding: 12px 14px;
+  background: var(--surface);
+}
+.card-large .large-src-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.card-large .large-title {
+  font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-large .large-excerpt {
+  font-size: 12px; color: var(--ink-soft);
+  margin-top: 6px; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (max-width: 600px) {
+  .cards-large { grid-template-columns: 1fr; }
+}
+
 /* ─── EMPTY / FOOTER ─── */
 .empty {
   grid-column: 1/-1; padding: 32px 16px; text-align: center;
@@ -788,25 +839,58 @@ function renderSection(container, key, items, showMoreBtn = false, totalCount = 
   `;
   container.appendChild(sec);
 
-  // ヒーローレイアウト：1件目ヒーロー＋2〜3件目サブ、4件目以降グリッド
-  if (items.length > 0) {
-    const heroWrap = document.createElement('div');
-    heroWrap.className = 'cat-hero';
-    heroWrap.appendChild(buildHeroCard(items[0], cfg.accent));
+  if (showMoreBtn) {
+    // すべて表示: ヒーロー+サブ+3列グリッド
+    if (items.length > 0) {
+      const heroWrap = document.createElement('div');
+      heroWrap.className = 'cat-hero';
+      heroWrap.appendChild(buildHeroCard(items[0], cfg.accent));
 
-    if (items.length > 1) {
-      const sub = document.createElement('div');
-      sub.className = 'cat-sub';
-      items.slice(1, 3).forEach(item => sub.appendChild(buildSubCard(item, cfg.accent)));
-      heroWrap.appendChild(sub);
+      if (items.length > 1) {
+        const sub = document.createElement('div');
+        sub.className = 'cat-sub';
+        items.slice(1, 3).forEach(item => sub.appendChild(buildSubCard(item, cfg.accent)));
+        heroWrap.appendChild(sub);
+      }
+      sec.appendChild(heroWrap);
     }
-    sec.appendChild(heroWrap);
-  }
 
-  if (items.length > 3) {
+    if (items.length > 3) {
+      const grid = document.createElement('div');
+      grid.className = 'cards';
+      renderCards(grid, items.slice(3), cfg.accent);
+      sec.appendChild(grid);
+    }
+  } else {
+    // カテゴリ選択時: 2列大カードグリッド
     const grid = document.createElement('div');
-    grid.className = 'cards';
-    renderCards(grid, items.slice(3), cfg.accent);
+    grid.className = 'cards-large';
+    items.forEach(item => {
+      const catColor = `var(--c-${item.category || 'culture'})`;
+      const dot = cfg.accent;
+      const a = document.createElement('a');
+      a.className = 'card-large';
+      a.href = item.url || '#';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      const thumbHtml = item.thumbnail
+        ? `<img class="large-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy"
+               onerror="this.outerHTML='<div class=\\'large-placeholder\\' style=\\'background:${catColor}\\'>${(item.category||'CULTURE').toUpperCase()}</div>'">`
+        : `<div class="large-placeholder" style="background:${catColor}">${(item.category||'CULTURE').toUpperCase()}</div>`;
+      const datePart = item.date ? `<span class="date">${esc(item.date)}</span>` : '';
+      a.innerHTML = `
+        ${thumbHtml}
+        <div class="large-body">
+          <div class="large-src-row">
+            <span class="cat-dot" style="background:${dot}"></span>
+            <span class="src">${esc(item.source)}</span>
+            ${datePart}
+          </div>
+          <div class="large-title">${esc(item.title)}</div>
+          ${item.excerpt ? `<div class="large-excerpt">${esc(item.excerpt)}</div>` : ''}
+        </div>`;
+      grid.appendChild(a);
+    });
     sec.appendChild(grid);
   }
 
