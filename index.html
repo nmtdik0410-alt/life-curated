@@ -314,19 +314,6 @@ body {
   gap: 8px;
   height: 220px;
 }
-.cat-sub .card {
-  overflow: hidden;
-  min-height: 0;
-}
-.cat-sub .card .card-thumb,
-.cat-sub .card .card-thumb img {
-  height: 70px;
-  object-fit: cover;
-}
-.cat-sub .card .card-thumb-placeholder {
-  height: 70px;
-  aspect-ratio: unset;
-}
 .card-sub {
   display: flex;
   gap: 0;
@@ -732,7 +719,7 @@ const KEYWORD_RULES = [
                                  'インタビュー', 'レコード', 'ライブ', 'カルチャー', '読書'] },
 ];
 
-function reclassify(title, excerpt, fallback) {
+function reclassify(title, excerpt) {
   const text = `${title} ${excerpt}`;
   for (const rule of KEYWORD_RULES) {
     if (rule.keywords.some(kw => text.includes(kw))) return rule.cat;
@@ -1074,7 +1061,7 @@ function render() {
 
   if (currentFilter === 'all') {
     // ── すべて表示: NEWセクション + カテゴリごとに最新3件 + 「もっと見る」ボタン ──
-    if (!currentSearch && !currentSource) {
+    if (!currentSource) {
       const newItems = sourceFiltered.slice(0, 10);
       if (newItems.length > 0) {
         renderNewSection(feed, newItems);

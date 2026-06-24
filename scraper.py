@@ -3,8 +3,8 @@
 
 """
 scraper.py  —  LIFE CURATED フィード更新スクリプト
-12媒体からインテリア・建築・カフェ・イベント・ガジェット・カルチャー記事を収集し、
-life_curated_feed.csv をスクリプトと同じディレクトリに保存する。
+35媒体以上・9カテゴリ（interior / design / art / culture / product / fashion / travel / food / event）の
+記事を収集し、life_curated_feed.csv をスクリプトと同じディレクトリに保存する。
 GitHub Actions / ローカル両対応。
 """
 
@@ -171,35 +171,6 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|article|item|card)'},
         ],
     },
-    # {
-    #     'category': 'カフェ・スポット',
-    #     'source':   'Hanako Web',
-    #     'base_url': 'https://hanako.tokyo',
-    #     'rss_urls': [
-    #         'https://hanako.tokyo/feed/',
-    #         'https://hanako.tokyo/feed',
-    #         'https://hanako.tokyo/rss.xml',
-    #     ],
-    #     'article_selectors': [
-    #         {'tag': 'article', 'class_re': r''},
-    #         {'tag': 'div',     'class_re': r'(post|article|item|card)'},
-    #     ],
-    #     'category_filter': ['food', 'travel'],
-    # },
-    # {
-    #     'category': 'カフェ・スポット',
-    #     'source':   '&Premium Web',
-    #     'base_url': 'https://www.machikado-creative.jp',
-    #     'rss_urls': [
-    #         'https://www.machikado-creative.jp/feed/',
-    #         'https://www.machikado-creative.jp/feed',
-    #         'https://www.machikado-creative.jp/rss.xml',
-    #     ],
-    #     'article_selectors': [
-    #         {'tag': 'article', 'class_re': r''},
-    #         {'tag': 'div',     'class_re': r'(post|entry|article|item|card)'},
-    #     ],
-    # },  # 街角diaryのみ配信のため除外
     {
         'category': 'イベント',
         'source':   'POPEYE Web',
@@ -323,19 +294,6 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(article|post|item|card)'},
         ],
     },
-    # {
-    #     'category': 'product',
-    #     'source':   'BLUE LUG BLOG',
-    #     'base_url': 'https://bluelug.com/blog',
-    #     'rss_urls': [
-    #         'https://bluelug.com/blog/feed/',
-    #         'https://bluelug.com/blog/feed',
-    #     ],
-    #     'article_selectors': [
-    #         {'tag': 'article', 'class_re': r''},
-    #         {'tag': 'div',     'class_re': r'(post|entry|article|item)'},
-    #     ],
-    # },
     {
         'category': 'カフェ・スポット',
         'source':   'カジキッサ',
@@ -412,19 +370,6 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
         ],
     },
-    # {
-    #     'category': 'インテリア',
-    #     'source':   'RIGNA',
-    #     'base_url': 'https://rigna.co.jp',
-    #     'rss_urls': [
-    #         'https://rigna.co.jp/feed/',
-    #         'https://rigna.co.jp/feed',
-    #     ],
-    #     'article_selectors': [
-    #         {'tag': 'article', 'class_re': r''},
-    #         {'tag': 'div',     'class_re': r'(post|article|item|card|entry)'},
-    #     ],
-    # },
     {
         'category': 'インテリア',
         'source':   '北欧、暮らしの道具店',
@@ -436,21 +381,6 @@ MEDIA_LIST = [
         ],
         'url_path_filter': '/note/',
     },
-    # {
-    #     'category': 'インテリア',
-    #     'source':   'MAARKET',
-    #     'base_url': 'https://maarket.jp',
-    #     'rss_urls': [],
-    #     'start_urls': ['https://maarket.jp/view/news/list'],
-    #     'url_path_filter': '/view/news/2',
-    #     'title_prefer_shorter': True,
-    # },
-    # {
-    #     'category': 'product',
-    #     'source':   'PHILE WEB',
-    #     'base_url': 'https://www.phileweb.com',
-    #     'rss_urls': ['https://www.phileweb.com/rss.php'],
-    # },  # オーディオ専門のため除外
     {
         'category': 'travel',
         'source':   'colocal',
@@ -481,21 +411,6 @@ MEDIA_LIST = [
         'base_url': 'https://vague.style',
         'rss_urls': ['https://vague.style/feed/'],
     },
-    # {
-    #     'category': 'product',
-    #     'source':   'LIFEHACKER JP',
-    #     'base_url': 'https://www.lifehacker.jp',
-    #     'rss_urls': ['https://www.lifehacker.jp/feed/'],
-    # },  # オミット
-    # UOMO: トップページがJS重依存のため記事取得不可、保留
-    # {
-    #     'category': 'fashion',
-    #     'source':   'UOMO',
-    #     'base_url': 'https://webuomo.jp',
-    #     'rss_urls': [],
-    #     'start_urls': ['https://webuomo.jp/'],
-    #     'url_path_filter': '/20',
-    # },
     {
         'category': 'design',
         'source':   'Pen Online',
@@ -617,7 +532,6 @@ YOUTUBE_CHANNELS = [
     {'handle': '@Actuskikaku',        'name': 'ACTUS'},
     {'handle': '@CONNECT-Design',     'name': 'CONNECT北欧'},
     {'handle': '@TOKYOROOMS',         'name': 'TOKYOROOMS'},
-    # {'handle': '@c.uragawa',          'name': 'クリエイティブの裏側'},  # オミット
     {'handle': '@hyggescape',         'name': 'HYGGESCAPE'},
     {'handle': '@y_interior',         'name': 'ゆっくりインテリア(カジマグ)'},
     {'handle': '@McGuffin2017',       'name': 'McGuffin'},
@@ -695,20 +609,6 @@ def get_meta_content(soup, selectors):
             if content:
                 return content
     return ''
-
-
-def normalize_date(value):
-    if not value:
-        return ''
-    value = value.strip()
-    try:
-        return datetime.fromisoformat(value.replace('Z', '+00:00')).strftime('%Y-%m-%d')
-    except Exception:
-        pass
-    try:
-        return parsedate_to_datetime(value).strftime('%Y-%m-%d')
-    except Exception:
-        return value[:10] if len(value) >= 10 else value
 
 
 # ─── カテゴリ自動分類 ─────────────────────────────────────────────────────────
@@ -1192,68 +1092,32 @@ def fetch_html_page(media, page_url, base_host, seen, max_count=MAX_ARTICLES):
             break
 
     if not articles:
-        if media.get('title_prefer_shorter'):
-            # 同URLが本文抜粋→タイトルの順で2回リンクされるページ向け（例: MAARKET）
-            # 全リンクを収集してURLごとに最短テキストをタイトルとして採用する
-            link_texts: dict = {}
-            for a_tag in soup.find_all('a', href=True):
-                href = a_tag['href'].strip()
-                full_url = urljoin(effective_page_url, href)
-                if not looks_like_article(full_url):
-                    continue
-                text = clean_text(a_tag.get_text())
-                if text and len(text) >= 8:
-                    link_texts.setdefault(full_url, []).append(text)
-            for full_url, texts in list(link_texts.items()):
-                title = min(texts, key=len)
-                long_texts = [t for t in texts if t != title]
-                excerpt = long_texts[0][:200] if long_texts else ''
-                if title_strip_re:
-                    title = re.sub(title_strip_re, '', title).strip()
-                if not title or len(title) < 8:
-                    continue
-                if is_noise_article(title, excerpt):
-                    continue
-                if media.get('require_japanese') and not has_japanese_chars(title):
-                    continue
-                articles.append({
-                    'category':  media['category'],
-                    'source':    media['source'],
-                    'title':     title,
-                    'url':       full_url,
-                    'excerpt':   excerpt,
-                    'date':      '',
-                    'thumbnail': '',
-                })
-                if len(articles) >= max_count:
-                    break
-        else:
-            for a_tag in soup.find_all('a', href=True):
-                href = a_tag['href'].strip()
-                full_url = urljoin(effective_page_url, href)
-                if full_url in seen or not looks_like_article(full_url):
-                    continue
-                seen.add(full_url)
-                title = clean_text(a_tag.get_text())
-                if title_strip_re:
-                    title = re.sub(title_strip_re, '', title).strip()
-                if not title or len(title) < 8:
-                    continue
-                if is_noise_article(title):
-                    continue
-                if media.get('require_japanese') and not has_japanese_chars(title):
-                    continue
-                articles.append({
-                    'category':  media['category'],
-                    'source':    media['source'],
-                    'title':     title,
-                    'url':       full_url,
-                    'excerpt':   '',
-                    'date':      '',
-                    'thumbnail': '',
-                })
-                if len(articles) >= max_count:
-                    break
+        for a_tag in soup.find_all('a', href=True):
+            href = a_tag['href'].strip()
+            full_url = urljoin(effective_page_url, href)
+            if full_url in seen or not looks_like_article(full_url):
+                continue
+            seen.add(full_url)
+            title = clean_text(a_tag.get_text())
+            if title_strip_re:
+                title = re.sub(title_strip_re, '', title).strip()
+            if not title or len(title) < 8:
+                continue
+            if is_noise_article(title):
+                continue
+            if media.get('require_japanese') and not has_japanese_chars(title):
+                continue
+            articles.append({
+                'category':  media['category'],
+                'source':    media['source'],
+                'title':     title,
+                'url':       full_url,
+                'excerpt':   '',
+                'date':      '',
+                'thumbnail': '',
+            })
+            if len(articles) >= max_count:
+                break
 
     return articles
 
@@ -1324,13 +1188,6 @@ def main():
                 else:
                     raise ValueError('記事が 1 件も取得できませんでした')
 
-            if media.get('require_japanese'):
-                before   = len(articles)
-                articles = [a for a in articles if has_japanese_chars(a['title'])]
-                dropped  = before - len(articles)
-                if dropped:
-                    print(f'  日本語タイトル以外を除外: {dropped} 件 → 残 {len(articles)} 件')
-
             print('  OGP 画像取得中...')
             for article in articles:
                 try:
@@ -1354,13 +1211,6 @@ def main():
                     article['category'] = claude_cats[i]
                 else:
                     article['category'] = classify_category(article['title'], article.get('excerpt', ''))
-            cat_filter = media.get('category_filter')
-            if cat_filter:
-                before   = len(articles)
-                articles = [a for a in articles if a.get('category') in cat_filter]
-                dropped  = before - len(articles)
-                if dropped:
-                    print(f'  カテゴリフィルター適用: {dropped}件除外 → 残{len(articles)}件')
             new_normal.extend(articles)
 
         except Exception as e:
@@ -1395,9 +1245,6 @@ def main():
                 if not url or url in seen_so_far:
                     continue
                 article['category'] = classify_category(article['title'], article.get('excerpt', ''))
-                cat_filter = media.get('category_filter')
-                if cat_filter and article.get('category') not in cat_filter:
-                    continue
                 new_backfill.append(article)
                 seen_so_far.add(url)
                 added_bf += 1
