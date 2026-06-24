@@ -255,6 +255,58 @@ body {
 }
 .cat-more-btn:hover { color: var(--ink); }
 
+/* ─── HERO LAYOUT ─── */
+.cat-hero {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.card-hero {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  transition: border-color .15s, box-shadow .15s;
+}
+.card-hero:hover {
+  border-color: var(--ink-faint);
+  box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+.card-hero .hero-thumb {
+  width: 100%; height: 220px;
+  object-fit: cover; display: block;
+}
+.card-hero .hero-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
+}
+.card-hero .hero-src {
+  font-size: 11px; color: rgba(255,255,255,.6); margin-bottom: 4px;
+}
+.card-hero .hero-title {
+  font-size: 15px; font-weight: 600; color: #fff; line-height: 1.4;
+}
+.card-hero-placeholder {
+  width: 100%; height: 220px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  color: rgba(255,255,255,.7);
+}
+.cat-sub {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media(max-width:640px) {
+  .cat-hero { grid-template-columns: 1fr; }
+  .cat-sub { display: none; }
+}
+
 /* ─── SOURCE FILTER BANNER ─── */
 #source-banner {
   border-bottom: 1px solid var(--line);
@@ -487,6 +539,33 @@ function renderCards(grid, items, accent) {
   });
 }
 
+function buildHeroCard(item, accent) {
+  const a = document.createElement('a');
+  a.className = 'card-hero';
+  a.href = item.url || '#';
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  const catColor = `var(--c-${item.category || 'culture'})`;
+  const datePart = item.date ? ` · ${esc(item.date)}` : '';
+  if (item.thumbnail) {
+    a.innerHTML = `
+      <img class="hero-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy"
+           onerror="this.outerHTML='<div class=\\'card-hero-placeholder\\' style=\\'background:${catColor}\\'>${(item.category||'CULTURE').toUpperCase()}</div>'">
+      <div class="hero-overlay">
+        <div class="hero-src"><span class="src">${esc(item.source)}</span>${datePart}</div>
+        <div class="hero-title">${esc(item.title)}</div>
+      </div>`;
+  } else {
+    a.innerHTML = `
+      <div class="card-hero-placeholder" style="background:${catColor}">${(item.category||'CULTURE').toUpperCase()}</div>
+      <div class="hero-overlay">
+        <div class="hero-src"><span class="src">${esc(item.source)}</span>${datePart}</div>
+        <div class="hero-title">${esc(item.title)}</div>
+      </div>`;
+  }
+  return a;
+}
+
 // showMoreBtn: true のとき「もっと見る」ボタンを追加、totalCount は見出しに表示する件数
 function renderSection(container, key, items, showMoreBtn = false, totalCount = null) {
   const cfg   = CATS[key];
@@ -501,11 +580,30 @@ function renderSection(container, key, items, showMoreBtn = false, totalCount = 
       </div>
       <span class="count">${count}</span>
     </div>
-    <div class="cards" id="c-${key}-${Date.now()}"></div>
   `;
   container.appendChild(sec);
 
-  renderCards(sec.querySelector('.cards'), items, cfg.accent);
+  // ヒーローレイアウト：1件目ヒーロー＋2〜3件目サブ、4件目以降グリッド
+  if (items.length > 0) {
+    const heroWrap = document.createElement('div');
+    heroWrap.className = 'cat-hero';
+    heroWrap.appendChild(buildHeroCard(items[0], cfg.accent));
+
+    if (items.length > 1) {
+      const sub = document.createElement('div');
+      sub.className = 'cat-sub';
+      renderCards(sub, items.slice(1, 3), cfg.accent);
+      heroWrap.appendChild(sub);
+    }
+    sec.appendChild(heroWrap);
+  }
+
+  if (items.length > 3) {
+    const grid = document.createElement('div');
+    grid.className = 'cards';
+    renderCards(grid, items.slice(3), cfg.accent);
+    sec.appendChild(grid);
+  }
 
   if (showMoreBtn) {
     const moreDiv = document.createElement('div');
