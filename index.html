@@ -479,7 +479,9 @@ footer {
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="logo">LIFE CURATED<span class="accent"> / a select shop for better lifestyle & culture</span></div>
+    <a href="/" id="logo-link" style="text-decoration:none; color:inherit;">
+      <div class="logo">LIFE CURATED<span class="accent"> / a select shop for better lifestyle & culture</span></div>
+    </a>
     <div class="topbar-meta">
       <span class="live"><span class="live-dot"></span><span id="updated-date">Loading…</span></span>
       <span id="total-count">—</span>
@@ -495,7 +497,7 @@ footer {
 </div>
 
 <div class="catnav" id="catnav">
-  <button class="active" data-cat="all"><span class="sw" style="background:var(--ink)"></span>すべて</button>
+  <button class="active" data-cat="all"><span class="sw" style="background:var(--ink)"></span>TOP</button>
   <button data-cat="interior"><span class="sw" style="background:var(--c-interior)"></span>INTERIOR</button>
   <button data-cat="design"><span class="sw" style="background:var(--c-design)"></span>DESIGN</button>
   <button data-cat="art"><span class="sw" style="background:var(--c-art)"></span>ART</button>
@@ -934,6 +936,23 @@ function render() {
 
   document.getElementById('total-count').textContent = `${allData.length} articles`;
 }
+
+// ─── ロゴクリックでホームに戻る ──────────────────────────────────────────────
+document.getElementById('logo-link').addEventListener('click', e => {
+  e.preventDefault();
+  currentFilter = 'all';
+  currentMedia  = 'all';
+  currentSource = '';
+  currentSearch = '';
+  visibleCount  = PAGE_SIZE;
+  document.querySelectorAll('#catnav button').forEach(b => b.classList.remove('active'));
+  document.querySelector('#catnav [data-cat="all"]').classList.add('active');
+  document.querySelectorAll('#mediafilter button').forEach(b => b.classList.remove('active'));
+  document.querySelector('#mediafilter [data-media="all"]').classList.add('active');
+  if (searchBar.classList.contains('open')) closeSearch();
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
 // ─── カテゴリナビ ─────────────────────────────────────────────────────────────
 document.querySelectorAll('#catnav button').forEach(btn => {
