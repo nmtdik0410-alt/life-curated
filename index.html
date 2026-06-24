@@ -390,22 +390,36 @@ body {
   max-width: 1100px; margin: 0 auto;
   padding: 20px 28px 4px;
 }
-.new-section-head {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 12px;
+.new-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
 }
 .new-label {
   font-size: 10.5px; font-weight: 700; letter-spacing: .12em;
   background: var(--ink); color: #fff;
   padding: 3px 9px; border-radius: 4px;
 }
-.new-sub {
+.new-head > span:not(.new-label) {
   font-size: 11.5px; color: var(--ink-faint);
 }
+.new-controls {
+  margin-left: auto;
+  display: flex; gap: 6px;
+}
+.new-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 0.5px solid var(--line);
+  background: var(--surface); color: var(--ink);
+  font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+  line-height: 1;
+}
+.new-btn:hover { background: var(--line-soft); }
 .new-scroll {
-  display: flex; gap: 12px;
+  display: flex; gap: 14px;
   overflow-x: auto;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
   -webkit-overflow-scrolling: touch;
@@ -414,34 +428,34 @@ body {
 .new-scroll::-webkit-scrollbar-track { background: transparent; }
 .new-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
 .new-card {
-  flex: 0 0 190px;
+  flex: 0 0 260px;
   text-decoration: none; color: inherit;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   transition: box-shadow .15s, border-color .15s;
 }
-.new-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.08); border-color: #d0d0d0; }
+.new-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.10); border-color: #c8c8c8; }
 .new-card-thumb {
-  width: 100%; height: 110px;
+  width: 100%; height: 200px;
   object-fit: cover; display: block;
 }
 .new-card-thumb-placeholder {
-  width: 100%; height: 110px;
+  width: 100%; height: 200px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,.75);
+  font-size: 10px; font-weight: 700; color: rgba(255,255,255,.75);
   letter-spacing: .1em;
 }
-.new-card-body { padding: 10px 11px 11px; }
+.new-card-body { padding: 12px 13px 14px; }
 .new-card-src {
   font-size: 10.5px; color: var(--ink-faint);
   display: flex; align-items: center; gap: 5px;
-  margin-bottom: 5px;
+  margin-bottom: 7px;
 }
 .new-cat-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 .new-card-title {
-  font-size: 12px; font-weight: 600; line-height: 1.45;
+  font-size: 14px; font-weight: 600; line-height: 1.5;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
   overflow: hidden;
 }
@@ -715,13 +729,18 @@ function renderNewSection(container, items) {
   const sec = document.createElement('div');
   sec.className = 'new-section';
   sec.innerHTML = `
-    <div class="new-section-head">
+    <div class="new-head">
       <span class="new-label">NEW</span>
-      <span class="new-sub">最新 ${items.length} 件</span>
+      <span>最新 ${items.length} 件</span>
+      <div class="new-controls">
+        <button class="new-btn" id="new-prev" aria-label="前へ">‹</button>
+        <button class="new-btn" id="new-next" aria-label="次へ">›</button>
+      </div>
     </div>
   `;
   const scroll = document.createElement('div');
   scroll.className = 'new-scroll';
+  scroll.id = 'new-scroll';
   items.forEach(item => {
     const catColor = `var(--c-${item.category || 'culture'})`;
     const dot = CATS[item.category]?.accent || 'var(--ink)';
@@ -869,7 +888,15 @@ function render() {
     // ── すべて表示: NEWセクション + カテゴリごとに最新3件 + 「もっと見る」ボタン ──
     if (!currentSearch && !currentSource) {
       const newItems = sourceFiltered.slice(0, 10);
-      if (newItems.length > 0) renderNewSection(feed, newItems);
+      if (newItems.length > 0) {
+        renderNewSection(feed, newItems);
+        document.getElementById('new-prev')?.addEventListener('click', () => {
+          document.getElementById('new-scroll').scrollBy({ left: -300, behavior: 'smooth' });
+        });
+        document.getElementById('new-next')?.addEventListener('click', () => {
+          document.getElementById('new-scroll').scrollBy({ left: 300, behavior: 'smooth' });
+        });
+      }
     }
     let hasAny = false;
     CAT_ORDER.forEach(key => {
