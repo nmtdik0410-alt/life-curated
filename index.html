@@ -544,6 +544,75 @@ footer {
   flex-wrap: wrap; gap: 12px;
   font-size: 11.5px; color: var(--ink-faint);
 }
+
+/* ─── サイドパネル ─── */
+.side-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.side-overlay.open { opacity: 1; pointer-events: all; }
+.side-panel {
+  position: fixed; top: 0; right: 0;
+  width: 320px; height: 100%;
+  background: var(--bg);
+  border-left: 0.5px solid var(--line);
+  z-index: 101;
+  transform: translateX(100%);
+  transition: transform .25s;
+  overflow-y: auto;
+  padding: 24px 20px;
+}
+.side-panel.open { transform: translateX(0); }
+.side-head {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.side-head h2 {
+  font-size: 13px; font-weight: 600;
+  letter-spacing: .1em;
+}
+.side-close {
+  background: none; border: none;
+  font-size: 20px; cursor: pointer;
+  color: var(--ink-soft); padding: 4px;
+}
+.side-close:hover { color: var(--ink); }
+.side-section-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .1em;
+  color: var(--ink-faint);
+  margin: 16px 0 8px;
+}
+.side-source-item {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--line-soft);
+  cursor: pointer;
+  font-size: 13px; color: var(--ink);
+  transition: color .15s;
+}
+.side-source-item:hover { color: var(--ink-soft); }
+.side-source-right {
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
+.side-source-count {
+  font-size: 11px; color: var(--ink-faint);
+  font-family: 'JetBrains Mono', monospace;
+}
+.side-source-arrow { font-size: 11px; color: var(--ink-faint); }
+.menu-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 18px; line-height: 1;
+  padding: 5px 7px; border-radius: 6px;
+  color: var(--ink-soft); transition: all .15s;
+}
+.menu-btn:hover, .menu-btn.active { background: var(--line-soft); color: var(--ink); }
 </style>
 </head>
 <body>
@@ -557,6 +626,7 @@ footer {
       <span class="live"><span class="live-dot"></span><span id="updated-date">Loading…</span></span>
       <span id="total-count">—</span>
       <button class="search-btn" id="search-btn" aria-label="検索">🔍</button>
+      <button class="menu-btn" id="menu-btn" aria-label="ソース一覧">☰</button>
     </div>
   </div>
   <div class="search-bar" id="search-bar">
@@ -565,6 +635,15 @@ footer {
       <button class="search-clear-btn" id="search-clear-btn">クリア</button>
     </div>
   </div>
+</div>
+
+<div class="side-overlay" id="side-overlay"></div>
+<div class="side-panel" id="side-panel">
+  <div class="side-head">
+    <h2>SOURCES</h2>
+    <button class="side-close" id="side-close">✕</button>
+  </div>
+  <div id="side-content"></div>
 </div>
 
 <div class="catnav" id="catnav">
@@ -1130,6 +1209,87 @@ document.getElementById('source-banner-close').addEventListener('click', () => {
   currentSource = '';
   visibleCount  = PAGE_SIZE;
   render();
+});
+
+// ─── サイドパネル ─────────────────────────────────────────────────────────────
+const menuBtn    = document.getElementById('menu-btn');
+const sideOverlay = document.getElementById('side-overlay');
+const sidePanel  = document.getElementById('side-panel');
+const sideClose  = document.getElementById('side-close');
+
+function openPanel() {
+  sideOverlay.classList.add('open');
+  sidePanel.classList.add('open');
+  menuBtn.classList.add('active');
+  buildSourcePanel();
+}
+function closePanel() {
+  sideOverlay.classList.remove('open');
+  sidePanel.classList.remove('open');
+  menuBtn.classList.remove('active');
+}
+
+function buildSourcePanel() {
+  const content = document.getElementById('side-content');
+  content.innerHTML = '';
+
+  const countMap = {};
+  allData.forEach(d => {
+    if (!countMap[d.source]) countMap[d.source] = { count: 0, isYT: d.source_type === 'YouTube' };
+    countMap[d.source].count++;
+  });
+
+  const webSources = [];
+  const ytSources  = [];
+  Object.entries(countMap).forEach(([name, info]) => {
+    (info.isYT ? ytSources : webSources).push({ name, count: info.count });
+  });
+  webSources.sort((a, b) => b.count - a.count);
+  ytSources.sort((a, b) => b.count - a.count);
+
+  function renderSourceList(sources) {
+    sources.forEach(({ name, count }) => {
+      const item = document.createElement('div');
+      item.className = 'side-source-item';
+      item.innerHTML = `
+        <span>${esc(name)}</span>
+        <span class="side-source-right">
+          <span class="side-source-count">${count}</span>
+          <span class="side-source-arrow">→</span>
+        </span>`;
+      item.addEventListener('click', () => {
+        currentSource = name;
+        visibleCount  = PAGE_SIZE;
+        closePanel();
+        render();
+      });
+      content.appendChild(item);
+    });
+  }
+
+  if (webSources.length) {
+    const lbl = document.createElement('div');
+    lbl.className = 'side-section-label';
+    lbl.textContent = 'WEB MEDIA';
+    content.appendChild(lbl);
+    renderSourceList(webSources);
+  }
+  if (ytSources.length) {
+    const lbl = document.createElement('div');
+    lbl.className = 'side-section-label';
+    lbl.textContent = 'YOUTUBE';
+    content.appendChild(lbl);
+    renderSourceList(ytSources);
+  }
+}
+
+menuBtn.addEventListener('click', () => {
+  sidePanel.classList.contains('open') ? closePanel() : openPanel();
+});
+sideClose.addEventListener('click', closePanel);
+sideOverlay.addEventListener('click', closePanel);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && sidePanel.classList.contains('open')) closePanel();
 });
 
 // ─── CSV fetch 自動読み込み ───────────────────────────────────────────────────
