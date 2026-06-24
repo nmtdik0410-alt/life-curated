@@ -159,21 +159,21 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|entry|article|item)'},
         ],
     },
-    {
-        'category': 'カフェ・スポット',
-        'source':   'Hanako Web',
-        'base_url': 'https://hanako.tokyo',
-        'rss_urls': [
-            'https://hanako.tokyo/feed/',
-            'https://hanako.tokyo/feed',
-            'https://hanako.tokyo/rss.xml',
-        ],
-        'article_selectors': [
-            {'tag': 'article', 'class_re': r''},
-            {'tag': 'div',     'class_re': r'(post|article|item|card)'},
-        ],
-        'category_filter': ['food', 'travel'],
-    },
+    # {
+    #     'category': 'カフェ・スポット',
+    #     'source':   'Hanako Web',
+    #     'base_url': 'https://hanako.tokyo',
+    #     'rss_urls': [
+    #         'https://hanako.tokyo/feed/',
+    #         'https://hanako.tokyo/feed',
+    #         'https://hanako.tokyo/rss.xml',
+    #     ],
+    #     'article_selectors': [
+    #         {'tag': 'article', 'class_re': r''},
+    #         {'tag': 'div',     'class_re': r'(post|article|item|card)'},
+    #     ],
+    #     'category_filter': ['food', 'travel'],
+    # },
     # {
     #     'category': 'カフェ・スポット',
     #     'source':   '&Premium Web',
