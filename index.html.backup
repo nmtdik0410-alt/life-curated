@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ENPW8S4LQP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ENPW8S4LQP');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFE CURATED</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #fafafa;
+  --surface:   #ffffff;
+  --line:      #e8e8e8;
+  --line-soft: #f0f0f0;
+  --ink:       #18181b;
+  --ink-soft:  #71717a;
+  --ink-faint: #a1a1aa;
+
+  --c-interior: #52525b;
+  --c-design:   #4a7a6b;
+  --c-food:     #8b5e3a;
+  --c-travel:   #3d6b52;
+  --c-event:    #8b5a6b;
+  --c-product:  #4a6b8a;
+  --c-fashion:  #7a5b8a;
+  --c-culture:  #6b5b8a;
+  --c-art:      #8a4040;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, 'Hiragino Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ─── TOP BAR ─── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250,250,250,.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 18px 28px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+}
+.logo { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.logo .accent { color: var(--ink-faint); font-weight: 400; }
+.topbar-meta {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 12px; color: var(--ink-soft);
+}
+.live { display: inline-flex; align-items: center; gap: 6px; }
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #52525b;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ─── CATEGORY NAV ─── */
+.catnav {
+  max-width: 1100px; margin: 0 auto;
+  padding: 12px 28px;
+  display: flex; gap: 5px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+}
+.catnav button {
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px; font-weight: 500;
+  padding: 6px 13px; border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent; color: var(--ink-soft);
+  cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.catnav button .sw { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.catnav button:hover { background: var(--line-soft); color: var(--ink); }
+.catnav button.active { background: var(--ink); color: #fff; }
+.catnav button.active .sw { background: rgba(255,255,255,.6) !important; }
+
+
+/* ─── MEDIA FILTER ─── */
+.mediafilter {
+  max-width: 1100px; margin: 0 auto;
+  padding: 10px 28px;
+  display: flex; gap: 4px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.mediafilter button {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 500;
+  padding: 5px 12px; border-radius: 5px;
+  border: 1px solid var(--line);
+  background: transparent; color: var(--ink-soft);
+  cursor: pointer; transition: all .15s;
+}
+.mediafilter button:hover { background: var(--line-soft); color: var(--ink); }
+.mediafilter button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+/* ─── SEARCH ─── */
+.search-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 15px; line-height: 1;
+  padding: 5px 7px; border-radius: 6px;
+  color: var(--ink-soft); transition: all .15s;
+}
+.search-btn:hover, .search-btn.active { background: var(--line-soft); color: var(--ink); }
+.search-bar { display: none; border-top: 1px solid var(--line); }
+.search-bar.open { display: block; }
+.search-bar-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 10px 28px;
+  display: flex; align-items: center; gap: 8px;
+}
+.search-bar-inner input {
+  flex: 1;
+  font-family: 'Inter', -apple-system, 'Hiragino Sans', sans-serif;
+  font-size: 14px; padding: 8px 14px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); color: var(--ink);
+  outline: none; transition: border-color .15s;
+}
+.search-bar-inner input::placeholder { color: var(--ink-faint); }
+.search-bar-inner input:focus { border-color: var(--ink-faint); }
+.search-clear-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 12.5px; color: var(--ink-faint);
+  padding: 7px 10px; border-radius: 6px; white-space: nowrap;
+  transition: all .15s;
+}
+.search-clear-btn:hover { background: var(--line-soft); color: var(--ink); }
+.search-result-header {
+  padding: 20px 0 6px;
+  font-size: 12.5px; color: var(--ink-soft);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── FEED ─── */
+.feed { max-width: 1100px; margin: 0 auto; padding: 8px 28px 60px; }
+.cat-section { margin-top: 36px; }
+.cat-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 14px;
+}
+.cat-head .left { display: flex; align-items: center; gap: 10px; }
+.cat-head .sw { width: 8px; height: 8px; border-radius: 50%; }
+.cat-head h2 { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.cat-head .count {
+  font-size: 12px; color: var(--ink-faint);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── CARDS ─── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media(max-width:860px){ .cards{ grid-template-columns: repeat(2,1fr); } }
+@media(max-width:560px){ .cards{ grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  text-decoration: none; color: var(--ink);
+  transition: border-color .15s, box-shadow .15s;
+}
+.card:hover {
+  border-color: var(--ink-faint);
+  box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+.card-thumb {
+  width: 100%; aspect-ratio: 16/10;
+  background: var(--line-soft); overflow: hidden;
+  position: relative;
+}
+.card-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card-thumb .play-btn {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.card-thumb .play-btn span {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: #fff;
+  padding-left: 2px; /* ▶の視覚的中央補正 */
+}
+.card-thumb-placeholder {
+  width: 100%; aspect-ratio: 16/9;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  color: rgba(255,255,255,.7);
+}
+.card-body {
+  padding: 14px 16px 16px;
+  display: flex; flex-direction: column; flex-grow: 1; gap: 8px;
+}
+.card .meta-row {
+  display: flex; align-items: center; gap: 7px;
+}
+.card .cat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.card .src { font-size: 11px; font-weight: 500; color: var(--ink-faint); cursor: pointer; }
+.card .src:hover { color: var(--ink-soft); }
+.card .date {
+  font-size: 10.5px; color: var(--ink-faint);
+  font-family: 'JetBrains Mono', monospace;
+  margin-left: auto; flex-shrink: 0;
+}
+.card .title {
+  font-size: 13.5px; font-weight: 500; line-height: 1.55;
+  letter-spacing: -.005em; flex-grow: 1;
+}
+.card .excerpt {
+  font-size: 12px; line-height: 1.7; color: var(--ink-soft);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ─── LOAD MORE ─── */
+.load-more {
+  margin-top: 44px; text-align: center;
+}
+.load-more button {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 500;
+  padding: 11px 28px; border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink-soft);
+  cursor: pointer; transition: all .15s;
+}
+.load-more button:hover {
+  border-color: var(--ink-faint); color: var(--ink);
+  box-shadow: 0 1px 6px rgba(0,0,0,.05);
+}
+.load-more .more-count { color: var(--ink-faint); font-weight: 400; }
+
+/* ─── CATEGORY MORE BUTTON ─── */
+.cat-more { margin-top: 14px; text-align: right; }
+.cat-more-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px; font-weight: 500; letter-spacing: -.01em;
+  color: var(--ink-soft); background: none; border: none;
+  cursor: pointer; padding: 4px 0;
+  transition: color .15s;
+}
+.cat-more-btn:hover { color: var(--ink); }
+
+/* ─── HERO LAYOUT ─── */
+.cat-hero {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.card-hero {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  display: block;
+  height: 220px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.card-hero:hover {
+  border-color: var(--ink-faint);
+  box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+.card-hero .hero-thumb {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.card-hero .hero-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
+  z-index: 1;
+}
+.card-hero .hero-src {
+  font-size: 11px; color: rgba(255,255,255,.6); margin-bottom: 4px;
+  position: relative; z-index: 1;
+}
+.card-hero .hero-title {
+  font-size: 15px; font-weight: 600; color: #fff; line-height: 1.4;
+  position: relative; z-index: 1;
+}
+.card-hero-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  color: rgba(255,255,255,.7);
+}
+.cat-sub {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  height: 220px;
+}
+.cat-sub .card {
+  overflow: hidden;
+  min-height: 0;
+}
+.cat-sub .card .card-thumb,
+.cat-sub .card .card-thumb img {
+  height: 70px;
+  object-fit: cover;
+}
+.cat-sub .card .card-thumb-placeholder {
+  height: 70px;
+  aspect-ratio: unset;
+}
+.card-sub {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color .15s, box-shadow .15s;
+}
+.card-sub:hover {
+  border-color: var(--ink-faint);
+  box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+.card-sub .sub-thumb {
+  width: 100px; min-width: 100px; height: 100%;
+  object-fit: cover; display: block;
+}
+.card-sub .sub-thumb-placeholder {
+  width: 100px; min-width: 100px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; letter-spacing: .06em;
+  color: rgba(255,255,255,.7);
+}
+.card-sub .sub-body {
+  padding: 10px 12px;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 4px; overflow: hidden;
+}
+.card-sub .sub-src-row {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--ink-faint);
+}
+.card-sub .sub-src-row .src { font-size: 11px; font-weight: 500; color: var(--ink-faint); cursor: pointer; }
+.card-sub .sub-src-row .src:hover { color: var(--ink-soft); }
+.card-sub .sub-title {
+  font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--ink);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+@media(max-width:640px) {
+  .cat-hero { grid-template-columns: 1fr; }
+  .cat-sub { display: none; }
+}
+
+/* ─── SOURCE FILTER BANNER ─── */
+#source-banner {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.source-banner-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 8px 28px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: var(--ink-soft);
+}
+.source-banner-close {
+  margin-left: auto;
+  background: none; border: 1px solid var(--line); cursor: pointer;
+  font-size: 12px; color: var(--ink-faint);
+  padding: 3px 8px; border-radius: 4px;
+  line-height: 1.4; transition: all .15s;
+}
+.source-banner-close:hover { background: var(--line-soft); color: var(--ink); }
+
+/* ─── NEW セクション（横スクロール） ─── */
+.new-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 20px 28px 4px;
+}
+.new-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.new-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .12em;
+  background: var(--ink); color: #fff;
+  padding: 3px 9px; border-radius: 4px;
+}
+.new-head > span:not(.new-label) {
+  font-size: 11.5px; color: var(--ink-faint);
+}
+.new-controls {
+  margin-left: auto;
+  display: flex; gap: 6px;
+}
+.new-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 0.5px solid var(--line);
+  background: var(--surface); color: var(--ink);
+  font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+  line-height: 1;
+}
+.new-btn:hover { background: var(--line-soft); }
+.new-scroll {
+  display: flex; gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.new-scroll::-webkit-scrollbar { height: 4px; }
+.new-scroll::-webkit-scrollbar-track { background: transparent; }
+.new-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+.new-card {
+  flex: 0 0 340px;
+  text-decoration: none; color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow .15s, border-color .15s;
+}
+.new-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.10); border-color: #c8c8c8; }
+.new-card-thumb {
+  width: 100%; height: 240px;
+  object-fit: cover; display: block;
+}
+.new-card-thumb-placeholder {
+  width: 100%; height: 240px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: rgba(255,255,255,.75);
+  letter-spacing: .1em;
+}
+.new-card-body { padding: 13px 14px 15px; }
+.new-card-src {
+  font-size: 12px; color: var(--ink-faint);
+  display: flex; align-items: center; gap: 5px;
+  margin-bottom: 8px;
+}
+.new-cat-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.new-card-title {
+  font-size: 16px; font-weight: 600; line-height: 1.5;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+/* ─── 2列大カードグリッド（カテゴリ選択時） ─── */
+.cards-large {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.card-large {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 0.5px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: opacity .15s;
+}
+.card-large:hover { opacity: .8; }
+.card-large .large-thumb {
+  width: 100%; height: 200px;
+  object-fit: cover; display: block;
+}
+.card-large .large-placeholder {
+  width: 100%; height: 200px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  color: rgba(255,255,255,.7);
+}
+.card-large .large-body {
+  padding: 12px 14px;
+  background: var(--surface);
+}
+.card-large .large-src-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.card-large .large-title {
+  font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ink);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-large .large-excerpt {
+  font-size: 12px; color: var(--ink-soft);
+  margin-top: 6px; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-large .play-btn {
+  position: absolute; top: 0; left: 0; right: 0; height: 200px;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.card-large .play-btn span {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: #fff;
+  padding-left: 2px;
+}
+@media (max-width: 600px) {
+  .cards-large { grid-template-columns: 1fr; }
+}
+
+/* ─── EMPTY / FOOTER ─── */
+.empty {
+  grid-column: 1/-1; padding: 32px 16px; text-align: center;
+  color: var(--ink-faint); font-size: 12.5px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+}
+footer {
+  border-top: 1px solid var(--line); padding: 28px 28px;
+  max-width: 1100px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+  font-size: 11.5px; color: var(--ink-faint);
+}
+
+/* ─── サイドパネル ─── */
+.side-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.side-overlay.open { opacity: 1; pointer-events: all; }
+.side-panel {
+  position: fixed; top: 0; right: 0;
+  width: 320px; height: 100%;
+  background: var(--bg);
+  border-left: 0.5px solid var(--line);
+  z-index: 101;
+  transform: translateX(100%);
+  transition: transform .25s;
+  overflow-y: auto;
+  padding: 24px 20px;
+}
+.side-panel.open { transform: translateX(0); }
+.side-head {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.side-head h2 {
+  font-size: 13px; font-weight: 600;
+  letter-spacing: .1em;
+}
+.side-close {
+  background: none; border: none;
+  font-size: 20px; cursor: pointer;
+  color: var(--ink-soft); padding: 4px;
+}
+.side-close:hover { color: var(--ink); }
+.side-section-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .1em;
+  color: var(--ink-faint);
+  margin: 16px 0 8px;
+}
+.side-source-item {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--line-soft);
+  cursor: pointer;
+  font-size: 13px; color: var(--ink);
+  transition: color .15s;
+}
+.side-source-item:hover { color: var(--ink-soft); }
+.side-source-right {
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
+.side-source-count {
+  font-size: 11px; color: var(--ink-faint);
+  font-family: 'JetBrains Mono', monospace;
+}
+.side-source-arrow { font-size: 11px; color: var(--ink-faint); }
+.menu-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 18px; line-height: 1;
+  padding: 5px 7px; border-radius: 6px;
+  color: var(--ink-soft); transition: all .15s;
+}
+.menu-btn:hover, .menu-btn.active { background: var(--line-soft); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="/" id="logo-link" style="text-decoration:none; color:inherit;">
+      <div class="logo">LIFE CURATED<span class="accent"> / a select shop for better lifestyle & culture</span></div>
+    </a>
+    <div class="topbar-meta">
+      <span class="live"><span class="live-dot"></span><span id="updated-date">Loading…</span></span>
+      <span id="total-count">—</span>
+      <button class="search-btn" id="search-btn" aria-label="検索">🔍</button>
+      <button class="menu-btn" id="menu-btn" aria-label="ソース一覧">☰</button>
+    </div>
+  </div>
+  <div class="search-bar" id="search-bar">
+    <div class="search-bar-inner">
+      <input type="text" id="search-input" placeholder="記事を検索…" autocomplete="off" spellcheck="false">
+      <button class="search-clear-btn" id="search-clear-btn">クリア</button>
+    </div>
+  </div>
+</div>
+
+<div class="side-overlay" id="side-overlay"></div>
+<div class="side-panel" id="side-panel">
+  <div class="side-head">
+    <h2>SOURCES</h2>
+    <button class="side-close" id="side-close">✕</button>
+  </div>
+  <div id="side-content"></div>
+</div>
+
+<div class="catnav" id="catnav">
+  <button class="active" data-cat="all"><span class="sw" style="background:var(--ink)"></span>TOP</button>
+  <button data-cat="interior"><span class="sw" style="background:var(--c-interior)"></span>INTERIOR</button>
+  <button data-cat="design"><span class="sw" style="background:var(--c-design)"></span>DESIGN</button>
+  <button data-cat="art"><span class="sw" style="background:var(--c-art)"></span>ART</button>
+  <button data-cat="culture"><span class="sw" style="background:var(--c-culture)"></span>CULTURE</button>
+  <button data-cat="product"><span class="sw" style="background:var(--c-product)"></span>PRODUCT</button>
+  <button data-cat="fashion"><span class="sw" style="background:var(--c-fashion)"></span>FASHION</button>
+  <button data-cat="travel"><span class="sw" style="background:var(--c-travel)"></span>TRAVEL</button>
+  <button data-cat="food"><span class="sw" style="background:var(--c-food)"></span>FOOD</button>
+  <button data-cat="event"><span class="sw" style="background:var(--c-event)"></span>EVENT</button>
+</div>
+
+<div class="mediafilter" id="mediafilter">
+  <button class="active" data-media="all">すべて</button>
+  <button data-media="article">記事</button>
+  <button data-media="video">動画</button>
+</div>
+
+<div id="source-banner" style="display:none">
+  <div class="source-banner-inner">
+    <span id="source-banner-text"></span>
+    <button class="source-banner-close" id="source-banner-close">✕</button>
+  </div>
+</div>
+
+<div class="feed" id="feed">
+  <div style="padding:64px 0;text-align:center;color:var(--ink-faint);font-size:13px;">記事を読み込んでいます…</div>
+</div>
+
+<footer>
+  <div>LIFE CURATED</div>
+  <div>v2.0 — Automatic Feed / Updated daily 9:00 JST</div>
+</footer>
+
+<script>
+// ─── カテゴリ定義（9カテゴリ） ────────────────────────────────────────────────
+const CATS = {
+  interior: { label: 'INTERIOR', accent: 'var(--c-interior)' },
+  design:   { label: 'DESIGN',   accent: 'var(--c-design)'   },
+  food:     { label: 'FOOD',     accent: 'var(--c-food)'     },
+  travel:   { label: 'TRAVEL',   accent: 'var(--c-travel)'   },
+  event:    { label: 'EVENT',    accent: 'var(--c-event)'    },
+  product:  { label: 'PRODUCT',  accent: 'var(--c-product)'  },
+  fashion:  { label: 'FASHION',  accent: 'var(--c-fashion)'  },
+  culture:  { label: 'CULTURE',  accent: 'var(--c-culture)'  },
+  art:      { label: 'ART',      accent: 'var(--c-art)'      },
+};
+
+// カテゴリ表示順
+const CAT_ORDER = ['interior', 'design', 'art', 'culture', 'product', 'fashion', 'travel', 'food', 'event'];
+
+// スクレイパーのカテゴリ列 → UIカテゴリキー
+const CATEGORY_LABEL_TO_KEY = {
+  'インテリア':             'interior',
+  '建築':                   'design',
+  'カフェ・スポット':       'food',
+  'イベント':               'event',
+  'ガジェット・プロダクト': 'product',
+  'カルチャー・アート':     'culture',
+};
+
+// キーワード再分類（上から順にマッチ、最初のルールが優先）
+const KEYWORD_RULES = [
+  { cat: 'art',      keywords: ['美術館', 'ギャラリー', '個展', '展覧会', 'アーティスト', '絵画', '彫刻', '写真展',
+                                 'インスタレーション', 'コレクター'] },
+  { cat: 'food',     keywords: ['カフェ', 'コーヒー', 'レストラン', 'グルメ', '料理', 'レシピ', 'ランチ', 'ディナー',
+                                 'スイーツ', 'ベーカリー', '喫茶', 'シェフ', 'ワイン', 'Bar', '食材'] },
+  { cat: 'travel',   keywords: ['旅行', '観光', 'ホテル', '旅館', '温泉', '旅先', '宿', '街歩き', '海外', '都市'] },
+  { cat: 'event',    keywords: ['イベント', 'フェア', '期間限定', 'オープン', 'ポップアップ', 'フェスティバル',
+                                 'マーケット', 'ワークショップ', 'デザインウィーク', 'サローネ'] },
+  { cat: 'design',   keywords: ['建築', 'プロダクトデザイン', '工業デザイン', 'グラフィック', 'クラフト', 'デザイナー',
+                                 '設計', '建物', 'アーキテクト', 'パビリオン', '構造'] },
+  { cat: 'interior', keywords: ['インテリア', '家具', 'ソファ', 'チェア', 'テーブル', '照明', '収納',
+                                 'ルームツアー', 'リノベーション', '一人暮らし', '北欧', '間取り', '模様替え',
+                                 'ラグ', 'カーテン', '棚', 'DIY', 'リビング', 'ダイニング'] },
+  { cat: 'product',  keywords: ['ガジェット', '家電', 'スマホ', 'カメラ', '乗り物', '自転車', '文具', '調理器具',
+                                 'アウトドア', 'テクノロジー', 'AI', 'デバイス', '新発売', 'レビュー',
+                                 'ギア', 'オーディオ', 'スピーカー', '時計', '車', 'バイク'] },
+  { cat: 'fashion',  keywords: ['ファッション', 'コーデ', '着こなし', 'ブランド', 'アパレル',
+                                 'スニーカー', 'シューズ', 'バッグ', 'ジュエリー', 'アクセサリー',
+                                 'コレクション', 'ウェア', 'Tシャツ', 'デニム'] },
+  { cat: 'culture',  keywords: ['映画', '音楽', '書籍', 'マンガ', 'ゲーム', 'ポッドキャスト', '写真',
+                                 'インタビュー', 'レコード', 'ライブ', 'カルチャー', '読書'] },
+];
+
+function reclassify(title, excerpt, fallback) {
+  const text = `${title} ${excerpt}`;
+  for (const rule of KEYWORD_RULES) {
+    if (rule.keywords.some(kw => text.includes(kw))) return rule.cat;
+  }
+  return 'culture';
+}
+
+// ─── 不正記事フィルタ ────────────────────────────────────────────────────────
+const TITLE_BLOCKLIST = new Set([
+  'SHOPPING', 'NEWS', 'TOPICS', 'PICKUP', 'FEATURE', 'SPECIAL',
+  'RANKING', 'CATEGORY', 'TAG', 'MORE', 'ALL', 'TOP', 'HOME',
+  'LIFESTYLE', 'BEAUTY', 'FASHION', 'FOOD', 'TRAVEL', 'CULTURE',
+  'DESIGN', 'ART', 'MUSIC', 'MOVIE', 'SPORTS', 'HEALTH',
+  'HOROSCOPES', 'HOROSCOPE', 'ACTIVE', 'INSIDER',
+  'ELLE ACTIVE', 'ELLE STYLE INSIDER',
+  'ショッピング', 'ニュース', 'トピックス', 'ランキング', 'おすすめ',
+  'タグ', 'カテゴリ', 'もっと見る', 'すべて', '一覧',
+]);
+
+function isValidArticle(title) {
+  if (!title || title.length < 10) return false;
+  if (TITLE_BLOCKLIST.has(title.trim().toUpperCase())) return false;
+  if (TITLE_BLOCKLIST.has(title.trim())) return false;
+  return true;
+}
+
+// ─── ユーティリティ ───────────────────────────────────────────────────────────
+function esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function splitRow(line) {
+  const cells = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ;
+    } else if (ch === ',' && !inQ) { cells.push(cur); cur = ''; }
+    else { cur += ch; }
+  }
+  cells.push(cur); return cells;
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = splitRow(lines[0]).map(h => h.replace(/^﻿/, '').trim());
+  return lines.slice(1).map(line => {
+    const cells = splitRow(line); const obj = {};
+    headers.forEach((h, i) => { obj[h] = (cells[i] || '').trim(); });
+    return obj;
+  }).filter(r => r.title || r.url);
+}
+
+// ─── 状態 ─────────────────────────────────────────────────────────────────────
+let allData       = [];
+let currentFilter = 'all';
+let currentMedia  = 'all';
+let currentSearch = '';
+let currentSource = '';
+const PAGE_SIZE   = 24;
+let visibleCount  = PAGE_SIZE;
+
+// ─── レンダリング ─────────────────────────────────────────────────────────────
+function renderCards(grid, items, accent) {
+  items.forEach(item => {
+    const dot = accent || CATS[item.category]?.accent || 'var(--ink)';
+    const a = document.createElement('a');
+    a.className = 'card';
+    a.href = item.url || '#';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    const playOverlay = item.source_type === 'YouTube'
+      ? `<div class="play-btn"><span>▶</span></div>` : '';
+    const catColor = `var(--c-${item.category || 'culture'})`;
+    const thumbHtml = item.thumbnail
+      ? `<div class="card-thumb"><img src="${esc(item.thumbnail)}" alt="" loading="lazy" onerror="this.parentElement.remove()">${playOverlay}</div>`
+      : `<div class="card-thumb-placeholder" style="background:${catColor}">${(item.category || 'CULTURE').toUpperCase()}</div>`;
+    a.innerHTML = `
+      ${thumbHtml}
+      <div class="card-body">
+        <div class="meta-row">
+          <span class="cat-dot" style="background:${dot}"></span>
+          <span class="src">${esc(item.source)}</span>
+          ${item.date ? `<span class="date">${esc(item.date)}</span>` : ''}
+        </div>
+        <div class="title">${esc(item.title)}</div>
+        <div class="excerpt">${esc(item.excerpt)}</div>
+      </div>
+    `;
+    grid.appendChild(a);
+  });
+}
+
+function buildHeroCard(item, accent) {
+  const a = document.createElement('a');
+  a.className = 'card-hero';
+  a.href = item.url || '#';
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  const catColor = `var(--c-${item.category || 'culture'})`;
+  const datePart = item.date ? ` · ${esc(item.date)}` : '';
+  if (item.thumbnail) {
+    a.innerHTML = `
+      <img class="hero-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy"
+           onerror="this.outerHTML='<div class=\\'card-hero-placeholder\\' style=\\'background:${catColor}\\'>${(item.category||'CULTURE').toUpperCase()}</div>'">
+      <div class="hero-overlay">
+        <div class="hero-src"><span class="src">${esc(item.source)}</span>${datePart}</div>
+        <div class="hero-title">${esc(item.title)}</div>
+      </div>`;
+  } else {
+    a.innerHTML = `
+      <div class="card-hero-placeholder" style="background:${catColor}">${(item.category||'CULTURE').toUpperCase()}</div>
+      <div class="hero-overlay">
+        <div class="hero-src"><span class="src">${esc(item.source)}</span>${datePart}</div>
+        <div class="hero-title">${esc(item.title)}</div>
+      </div>`;
+  }
+  return a;
+}
+
+function buildSubCard(item, accent) {
+  const a = document.createElement('a');
+  a.className = 'card-sub';
+  a.href = item.url || '#';
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  const catColor = `var(--c-${item.category || 'culture'})`;
+  const thumbHtml = item.thumbnail
+    ? `<img class="sub-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy"
+           onerror="this.outerHTML='<div class=\\'sub-thumb-placeholder\\' style=\\'background:${catColor}\\'>${(item.category||'CULTURE').toUpperCase()}</div>'">`
+    : `<div class="sub-thumb-placeholder" style="background:${catColor}">${(item.category||'CULTURE').toUpperCase()}</div>`;
+  const datePart = item.date ? `<span class="date">${esc(item.date)}</span>` : '';
+  a.innerHTML = `
+    ${thumbHtml}
+    <div class="sub-body">
+      <div class="sub-src-row">
+        <span class="src">${esc(item.source)}</span>${datePart}
+      </div>
+      <div class="sub-title">${esc(item.title)}</div>
+    </div>`;
+  return a;
+}
+
+function renderNewSection(container, items) {
+  const sec = document.createElement('div');
+  sec.className = 'new-section';
+  sec.innerHTML = `
+    <div class="new-head">
+      <span class="new-label">NEW</span>
+      <span>最新 ${items.length} 件</span>
+      <div class="new-controls">
+        <button class="new-btn" id="new-prev" aria-label="前へ">‹</button>
+        <button class="new-btn" id="new-next" aria-label="次へ">›</button>
+      </div>
+    </div>
+  `;
+  const scroll = document.createElement('div');
+  scroll.className = 'new-scroll';
+  scroll.id = 'new-scroll';
+  items.forEach(item => {
+    const catColor = `var(--c-${item.category || 'culture'})`;
+    const dot = CATS[item.category]?.accent || 'var(--ink)';
+    const a = document.createElement('a');
+    a.className = 'new-card';
+    a.href = item.url || '#';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    const thumbHtml = item.thumbnail
+      ? `<img class="new-card-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy"
+             onerror="this.outerHTML='<div class=\\'new-card-thumb-placeholder\\' style=\\'background:${catColor}\\'>${(item.category||'CULTURE').toUpperCase()}</div>'">`
+      : `<div class="new-card-thumb-placeholder" style="background:${catColor}">${(item.category||'CULTURE').toUpperCase()}</div>`;
+    a.innerHTML = `
+      ${thumbHtml}
+      <div class="new-card-body">
+        <div class="new-card-src">
+          <span class="new-cat-dot" style="background:${dot}"></span>
+          <span class="src">${esc(item.source)}</span>
+          ${item.date ? `<span>· ${esc(item.date)}</span>` : ''}
+        </div>
+        <div class="new-card-title">${esc(item.title)}</div>
+      </div>`;
+    scroll.appendChild(a);
+  });
+  sec.appendChild(scroll);
+  container.appendChild(sec);
+}
+
+// showMoreBtn: true のとき「もっと見る」ボタンを追加、totalCount は見出しに表示する件数
+function renderSection(container, key, items, showMoreBtn = false, totalCount = null) {
+  const cfg   = CATS[key];
+  const count = totalCount ?? items.length;
+  const sec   = document.createElement('div');
+  sec.className = 'cat-section';
+  sec.innerHTML = `
+    <div class="cat-head">
+      <div class="left">
+        <span class="sw" style="background:${cfg.accent}"></span>
+        <h2>${cfg.label}</h2>
+      </div>
+      <span class="count">${count}</span>
+    </div>
+  `;
+  container.appendChild(sec);
+
+  if (showMoreBtn) {
+    // すべて表示: ヒーロー+サブ+3列グリッド
+    if (items.length > 0) {
+      const heroWrap = document.createElement('div');
+      heroWrap.className = 'cat-hero';
+      heroWrap.appendChild(buildHeroCard(items[0], cfg.accent));
+
+      if (items.length > 1) {
+        const sub = document.createElement('div');
+        sub.className = 'cat-sub';
+        items.slice(1, 3).forEach(item => sub.appendChild(buildSubCard(item, cfg.accent)));
+        heroWrap.appendChild(sub);
+      }
+      sec.appendChild(heroWrap);
+    }
+
+    if (items.length > 3) {
+      const grid = document.createElement('div');
+      grid.className = 'cards';
+      renderCards(grid, items.slice(3), cfg.accent);
+      sec.appendChild(grid);
+    }
+  } else {
+    // カテゴリ選択時: 2列大カードグリッド
+    const grid = document.createElement('div');
+    grid.className = 'cards-large';
+    items.forEach(item => {
+      const catColor = `var(--c-${item.category || 'culture'})`;
+      const dot = cfg.accent;
+      const a = document.createElement('a');
+      a.className = 'card-large';
+      a.href = item.url || '#';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      const thumbHtml = item.thumbnail
+        ? `<img class="large-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy"
+               onerror="this.outerHTML='<div class=\\'large-placeholder\\' style=\\'background:${catColor}\\'>${(item.category||'CULTURE').toUpperCase()}</div>'">`
+        : `<div class="large-placeholder" style="background:${catColor}">${(item.category||'CULTURE').toUpperCase()}</div>`;
+      const datePart = item.date ? `<span class="date">${esc(item.date)}</span>` : '';
+      const playOverlayLarge = item.source_type === 'YouTube'
+        ? `<div class="play-btn"><span>▶</span></div>` : '';
+      a.innerHTML = `
+        ${thumbHtml}
+        ${playOverlayLarge}
+        <div class="large-body">
+          <div class="large-src-row">
+            <span class="cat-dot" style="background:${dot}"></span>
+            <span class="src">${esc(item.source)}</span>
+            ${datePart}
+          </div>
+          <div class="large-title">${esc(item.title)}</div>
+          ${item.excerpt ? `<div class="large-excerpt">${esc(item.excerpt)}</div>` : ''}
+        </div>`;
+      grid.appendChild(a);
+    });
+    sec.appendChild(grid);
+  }
+
+  if (showMoreBtn) {
+    const moreDiv = document.createElement('div');
+    moreDiv.className = 'cat-more';
+    moreDiv.innerHTML = `<button class="cat-more-btn" data-cat="${key}">もっと見る（${cfg.label}）→</button>`;
+    sec.appendChild(moreDiv);
+    moreDiv.querySelector('.cat-more-btn').onclick = () => {
+      document.querySelectorAll('#catnav button').forEach(b => b.classList.remove('active'));
+      document.querySelector(`#catnav [data-cat="${key}"]`)?.classList.add('active');
+      currentFilter = key;
+      visibleCount  = PAGE_SIZE;
+      render();
+    };
+  }
+}
+
+function render() {
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+
+  // ── ソースフィルターバナー ──
+  const banner     = document.getElementById('source-banner');
+  const bannerText = document.getElementById('source-banner-text');
+  if (currentSource) {
+    banner.style.display = '';
+    bannerText.textContent = `← ${currentSource} の記事を表示中`;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  const mediaFiltered = currentMedia === 'all' ? allData
+    : currentMedia === 'video' ? allData.filter(d => d.source_type === 'YouTube')
+    : allData.filter(d => !d.source_type || d.source_type !== 'YouTube');
+
+  const sourceFiltered = currentSource
+    ? mediaFiltered.filter(d => d.source === currentSource)
+    : mediaFiltered;
+
+  // ── 検索モード ──
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    let results = sourceFiltered.filter(d =>
+      d.title.toLowerCase().includes(q) ||
+      d.excerpt.toLowerCase().includes(q) ||
+      d.source.toLowerCase().includes(q)
+    );
+    if (currentFilter !== 'all') results = results.filter(d => d.category === currentFilter);
+
+    const header = document.createElement('div');
+    header.className = 'search-result-header';
+    header.textContent = results.length > 0
+      ? `"${currentSearch}" の検索結果：${results.length}件`
+      : `"${currentSearch}" に該当する記事が見つかりませんでした`;
+    feed.appendChild(header);
+
+    if (results.length > 0) {
+      const sec = document.createElement('div');
+      sec.className = 'cat-section';
+      const grid = document.createElement('div');
+      grid.className = 'cards';
+      sec.appendChild(grid);
+      feed.appendChild(sec);
+      renderCards(grid, results.slice(0, visibleCount));
+
+      if (results.length > visibleCount) {
+        const remaining = results.length - visibleCount;
+        const div = document.createElement('div');
+        div.className = 'load-more';
+        div.innerHTML = `<button id="load-more-btn">もっと読む<span class="more-count"> — あと ${remaining} 件</span></button>`;
+        feed.appendChild(div);
+        document.getElementById('load-more-btn').onclick = () => { visibleCount += PAGE_SIZE; render(); };
+      }
+    }
+    document.getElementById('total-count').textContent = `${results.length} results`;
+    return;
+  }
+
+  if (currentFilter === 'all') {
+    // ── すべて表示: NEWセクション + カテゴリごとに最新3件 + 「もっと見る」ボタン ──
+    if (!currentSearch && !currentSource) {
+      const newItems = sourceFiltered.slice(0, 10);
+      if (newItems.length > 0) {
+        renderNewSection(feed, newItems);
+        document.getElementById('new-prev')?.addEventListener('click', () => {
+          document.getElementById('new-scroll').scrollBy({ left: -700, behavior: 'smooth' });
+        });
+        document.getElementById('new-next')?.addEventListener('click', () => {
+          document.getElementById('new-scroll').scrollBy({ left: 700, behavior: 'smooth' });
+        });
+      }
+    }
+    let hasAny = false;
+    CAT_ORDER.forEach(key => {
+      const catItems = sourceFiltered.filter(d => d.category === key);
+      if (catItems.length === 0) return;
+      hasAny = true;
+      renderSection(feed, key, catItems.slice(0, 3), true, catItems.length);
+    });
+    if (!hasAny) {
+      feed.innerHTML = `<div class="cat-section"><div class="cards"><div class="empty">記事がありません</div></div></div>`;
+    }
+  } else {
+    // ── 単一カテゴリ: ページネーション付き全件表示 ──
+    const filtered = sourceFiltered.filter(d => d.category === currentFilter);
+    const visible   = filtered.slice(0, visibleCount);
+
+    if (visible.length === 0) {
+      feed.innerHTML = `<div class="cat-section"><div class="cards"><div class="empty">記事がありません</div></div></div>`;
+    } else {
+      renderSection(feed, currentFilter, visible, false);
+
+      if (filtered.length > visibleCount) {
+        const remaining = filtered.length - visibleCount;
+        const div = document.createElement('div');
+        div.className = 'load-more';
+        div.innerHTML = `<button id="load-more-btn">もっと読む<span class="more-count"> — あと ${remaining} 件</span></button>`;
+        feed.appendChild(div);
+        document.getElementById('load-more-btn').onclick = () => {
+          visibleCount += PAGE_SIZE;
+          render();
+        };
+      }
+    }
+  }
+
+  document.getElementById('total-count').textContent = `${allData.length} articles`;
+}
+
+// ─── ロゴクリックでホームに戻る ──────────────────────────────────────────────
+document.getElementById('logo-link').addEventListener('click', e => {
+  e.preventDefault();
+  currentFilter = 'all';
+  currentMedia  = 'all';
+  currentSource = '';
+  currentSearch = '';
+  visibleCount  = PAGE_SIZE;
+  document.querySelectorAll('#catnav button').forEach(b => b.classList.remove('active'));
+  document.querySelector('#catnav [data-cat="all"]').classList.add('active');
+  document.querySelectorAll('#mediafilter button').forEach(b => b.classList.remove('active'));
+  document.querySelector('#mediafilter [data-media="all"]').classList.add('active');
+  if (searchBar.classList.contains('open')) closeSearch();
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ─── カテゴリナビ ─────────────────────────────────────────────────────────────
+document.querySelectorAll('#catnav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#catnav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.cat;
+    visibleCount  = PAGE_SIZE;  // ページリセット
+    render();
+  });
+});
+
+// ─── 検索 ────────────────────────────────────────────────────────────────────
+const searchBtn   = document.getElementById('search-btn');
+const searchBar   = document.getElementById('search-bar');
+const searchInput = document.getElementById('search-input');
+const searchClear = document.getElementById('search-clear-btn');
+
+function openSearch() {
+  searchBar.classList.add('open');
+  searchBtn.classList.add('active');
+  searchInput.focus();
+}
+function closeSearch() {
+  searchBar.classList.remove('open');
+  searchBtn.classList.remove('active');
+  searchInput.value = '';
+  currentSearch = '';
+  visibleCount = PAGE_SIZE;
+  render();
+}
+
+searchBtn.addEventListener('click', () => {
+  searchBar.classList.contains('open') ? closeSearch() : openSearch();
+});
+
+searchInput.addEventListener('input', () => {
+  currentSearch = searchInput.value.trim();
+  visibleCount = PAGE_SIZE;
+  render();
+});
+
+searchClear.addEventListener('click', closeSearch);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && searchBar.classList.contains('open')) closeSearch();
+});
+
+document.addEventListener('click', e => {
+  if (searchBar.classList.contains('open') &&
+      !e.target.closest('.topbar') && currentSearch === '') {
+    closeSearch();
+  }
+});
+
+// ─── ソースクリックフィルター ────────────────────────────────────────────────
+document.getElementById('feed').addEventListener('click', e => {
+  const srcEl = e.target.closest('.src');
+  if (!srcEl) return;
+  e.preventDefault();
+  e.stopPropagation();
+  currentSource = srcEl.textContent.trim();
+  visibleCount  = PAGE_SIZE;
+  render();
+});
+
+document.getElementById('source-banner-close').addEventListener('click', () => {
+  currentSource = '';
+  visibleCount  = PAGE_SIZE;
+  render();
+});
+
+// ─── サイドパネル ─────────────────────────────────────────────────────────────
+const menuBtn    = document.getElementById('menu-btn');
+const sideOverlay = document.getElementById('side-overlay');
+const sidePanel  = document.getElementById('side-panel');
+const sideClose  = document.getElementById('side-close');
+
+function openPanel() {
+  sideOverlay.classList.add('open');
+  sidePanel.classList.add('open');
+  menuBtn.classList.add('active');
+  buildSourcePanel();
+}
+function closePanel() {
+  sideOverlay.classList.remove('open');
+  sidePanel.classList.remove('open');
+  menuBtn.classList.remove('active');
+}
+
+function buildSourcePanel() {
+  const content = document.getElementById('side-content');
+  content.innerHTML = '';
+
+  const countMap = {};
+  allData.forEach(d => {
+    if (!countMap[d.source]) countMap[d.source] = { count: 0, isYT: d.source_type === 'YouTube' };
+    countMap[d.source].count++;
+  });
+
+  const webSources = [];
+  const ytSources  = [];
+  Object.entries(countMap).forEach(([name, info]) => {
+    (info.isYT ? ytSources : webSources).push({ name, count: info.count });
+  });
+  webSources.sort((a, b) => b.count - a.count);
+  ytSources.sort((a, b) => b.count - a.count);
+
+  function renderSourceList(sources) {
+    sources.forEach(({ name, count }) => {
+      const item = document.createElement('div');
+      item.className = 'side-source-item';
+      item.innerHTML = `
+        <span>${esc(name)}</span>
+        <span class="side-source-right">
+          <span class="side-source-count">${count}</span>
+          <span class="side-source-arrow">→</span>
+        </span>`;
+      item.addEventListener('click', () => {
+        currentSource = name;
+        visibleCount  = PAGE_SIZE;
+        closePanel();
+        render();
+      });
+      content.appendChild(item);
+    });
+  }
+
+  if (webSources.length) {
+    const lbl = document.createElement('div');
+    lbl.className = 'side-section-label';
+    lbl.textContent = 'WEB MEDIA';
+    content.appendChild(lbl);
+    renderSourceList(webSources);
+  }
+  if (ytSources.length) {
+    const lbl = document.createElement('div');
+    lbl.className = 'side-section-label';
+    lbl.textContent = 'YOUTUBE';
+    content.appendChild(lbl);
+    renderSourceList(ytSources);
+  }
+}
+
+menuBtn.addEventListener('click', () => {
+  sidePanel.classList.contains('open') ? closePanel() : openPanel();
+});
+sideClose.addEventListener('click', closePanel);
+sideOverlay.addEventListener('click', closePanel);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && sidePanel.classList.contains('open')) closePanel();
+});
+
+// ─── CSV fetch 自動読み込み ───────────────────────────────────────────────────
+
+document.querySelectorAll('#mediafilter button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#mediafilter button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMedia = btn.dataset.media;
+    render();
+  });
+});
+
+async function loadCSV() {
+  try {
+    const res = await fetch('life_curated_feed.csv');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length === 0) throw new Error('no data');
+
+    allData = rows.map(r => {
+      const catLabel = r.category || r['カテゴリ'] || '';
+      const source   = r.source   || r['メディア名'] || '';
+      const title    = r.title    || r['タイトル'] || '';
+      const excerpt  = r.excerpt  || r['概要']     || '';
+      const rawDate  = r.date     || r['日付']     || '';
+      const dispDate = rawDate.length >= 10
+        ? rawDate.slice(5, 10).replace('-', '.')
+        : rawDate;
+      // CSVのcategory値をそのまま使用（空欄はタイトル・抜粋でキーワード再分類）
+      const catKey = CATS[catLabel] ? catLabel
+        : (CATEGORY_LABEL_TO_KEY[catLabel] || reclassify(title, excerpt, 'culture'));
+      return {
+        source,
+        source_type: r.source_type || '',
+        title,
+        url:       r.url       || r['URL']        || '#',
+        rawDate,
+        date:      dispDate,
+        excerpt,
+        category:  catKey,
+        thumbnail: r.thumbnail || r['サムネイル'] || '',
+      };
+    }).filter(d => isValidArticle(d.title));
+
+    // ④ 新着順ソート
+    allData.sort((a, b) => (b.rawDate || '').localeCompare(a.rawDate || ''));
+
+    // トップバーの更新日時（last_updated.txt を優先、なければ CSV 最新日）
+    const latest = allData.find(d => d.rawDate)?.rawDate;
+    try {
+      const tsRes = await fetch('last_updated.txt');
+      if (tsRes.ok) {
+        const tsText = (await tsRes.text()).trim();
+        document.getElementById('updated-date').textContent = `Updated ${tsText}`;
+      } else {
+        throw new Error('not found');
+      }
+    } catch {
+      document.getElementById('updated-date').textContent = latest
+        ? `Updated ${latest.slice(5, 10).replace('-', '.')}`
+        : 'Updated';
+    }
+
+    render();
+  } catch (err) {
+    console.warn('[LIFE CURATED] CSV読み込みエラー:', err.message);
+    document.getElementById('updated-date').textContent = 'CSV未読込';
+    document.getElementById('feed').innerHTML =
+      `<div class="cat-section"><div class="cards"><div class="empty">
+        データの自動読み込みに失敗しました。<br>
+        ローカル確認は <code>python3 -m http.server 8000</code> で起動してください。
+      </div></div></div>`;
+  }
+}
+
+loadCSV();
+</script>
+</body>
+</html>
