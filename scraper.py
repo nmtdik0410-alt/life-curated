@@ -159,6 +159,18 @@ MEDIA_LIST = [
             {'tag': 'div',     'class_re': r'(post|entry|article|item)'},
         ],
     },
+    {
+        'category': 'インテリア',
+        'source':   'キナリノ',
+        'base_url': 'https://kinarino.jp',
+        'rss_urls': [
+            'https://kinarino.jp/?format=rss',
+        ],
+        'article_selectors': [
+            {'tag': 'article', 'class_re': r''},
+            {'tag': 'div',     'class_re': r'(post|article|item|card)'},
+        ],
+    },
     # {
     #     'category': 'カフェ・スポット',
     #     'source':   'Hanako Web',
