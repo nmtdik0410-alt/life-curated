@@ -893,10 +893,10 @@ function render() {
       if (newItems.length > 0) {
         renderNewSection(feed, newItems);
         document.getElementById('new-prev')?.addEventListener('click', () => {
-          document.getElementById('new-scroll').scrollBy({ left: -300, behavior: 'smooth' });
+          document.getElementById('new-scroll').scrollBy({ left: -700, behavior: 'smooth' });
         });
         document.getElementById('new-next')?.addEventListener('click', () => {
-          document.getElementById('new-scroll').scrollBy({ left: 300, behavior: 'smooth' });
+          document.getElementById('new-scroll').scrollBy({ left: 700, behavior: 'smooth' });
         });
       }
     }
