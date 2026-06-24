@@ -1320,8 +1320,9 @@ async function loadCSV() {
       const dispDate = rawDate.length >= 10
         ? rawDate.slice(5, 10).replace('-', '.')
         : rawDate;
-      // CSVのcategory値をそのまま使用（CATS未定義の旧日本語名はマッピング変換）
-      const catKey = CATS[catLabel] ? catLabel : (CATEGORY_LABEL_TO_KEY[catLabel] || 'culture');
+      // CSVのcategory値をそのまま使用（空欄はタイトル・抜粋でキーワード再分類）
+      const catKey = CATS[catLabel] ? catLabel
+        : (CATEGORY_LABEL_TO_KEY[catLabel] || reclassify(title, excerpt, 'culture'));
       return {
         source,
         source_type: r.source_type || '',

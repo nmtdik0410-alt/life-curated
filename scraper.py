@@ -1268,12 +1268,19 @@ def load_existing_csv():
     if not os.path.exists(OUTPUT_CSV):
         return []
     articles = []
+    repaired = 0
     try:
         with open(OUTPUT_CSV, newline='', encoding='utf-8-sig') as f:
             for row in csv.DictReader(f):
-                articles.append(dict(row))
+                r = dict(row)
+                if not r.get('category', '').strip():
+                    r['category'] = classify_category(r.get('title', ''), r.get('excerpt', ''))
+                    repaired += 1
+                articles.append(r)
     except Exception as e:
         print(f'  ⚠ 既存CSV読み込みエラー: {e}')
+    if repaired:
+        print(f'  ⚠ category空欄を自動修復: {repaired}件')
     return articles
 
 
