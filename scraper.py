@@ -172,6 +172,7 @@ MEDIA_LIST = [
             {'tag': 'article', 'class_re': r''},
             {'tag': 'div',     'class_re': r'(post|article|item|card)'},
         ],
+        'category_filter': ['food', 'travel'],
     },
     # {
     #     'category': 'カフェ・スポット',
@@ -1334,6 +1335,13 @@ def main():
                     article['category'] = claude_cats[i]
                 else:
                     article['category'] = classify_category(article['title'], article.get('excerpt', ''))
+            cat_filter = media.get('category_filter')
+            if cat_filter:
+                before   = len(articles)
+                articles = [a for a in articles if a.get('category') in cat_filter]
+                dropped  = before - len(articles)
+                if dropped:
+                    print(f'  カテゴリフィルター適用: {dropped}件除外 → 残{len(articles)}件')
             new_normal.extend(articles)
 
         except Exception as e:
@@ -1368,6 +1376,9 @@ def main():
                 if not url or url in seen_so_far:
                     continue
                 article['category'] = classify_category(article['title'], article.get('excerpt', ''))
+                cat_filter = media.get('category_filter')
+                if cat_filter and article.get('category') not in cat_filter:
+                    continue
                 new_backfill.append(article)
                 seen_so_far.add(url)
                 added_bf += 1
