@@ -1415,6 +1415,36 @@ def main():
             pass
     print(f'OGP補完: {ogp_added}件 / Unsplash補完: {unsplash_added}件')
 
+    # ─── 過去記事の品質補完（qualityが空の記事を古い順に100件） ───
+    QUALITY_BACKFILL_LIMIT = 100
+    quality_targets = sorted(
+        [r for r in existing if not r.get('quality')],
+        key=lambda a: a.get('date') or '',
+        reverse=False,
+    )
+    print(f'\n品質補完対象: {len(quality_targets)}件 → 最大{QUALITY_BACKFILL_LIMIT}件処理')
+    quality_high = 0
+    quality_low  = 0
+    for i in range(0, min(len(quality_targets), QUALITY_BACKFILL_LIMIT), 5):
+        batch = quality_targets[i:i + 5]
+        items = [{'title': r.get('title', ''), 'excerpt': r.get('excerpt', ''), 'tags': r.get('tags', '')} for r in batch]
+        results = classify_with_claude_batch(items)
+        if not results:
+            continue
+        for row, result in zip(batch, results):
+            if result and isinstance(result, dict):
+                row['quality'] = result.get('quality', 'high')
+            elif result and isinstance(result, str):
+                row['quality'] = 'high'
+            else:
+                row['quality'] = 'high'
+            if row['quality'] == 'low':
+                quality_low += 1
+            else:
+                quality_high += 1
+    existing = [r for r in existing if r.get('quality') != 'low']
+    print(f'品質補完完了: high {quality_high}件 / low除外 {quality_low}件')
+
     with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction='ignore', restval='')
         writer.writeheader()
