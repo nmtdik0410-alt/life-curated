@@ -163,6 +163,10 @@ body {
   font-size: 12px; color: var(--ink-faint);
   font-family: 'JetBrains Mono', monospace;
 }
+.cat-head-link { cursor: pointer; }
+.cat-head-link:hover h2 { color: var(--ink-soft); }
+.cat-more-label { font-size: 12px; color: var(--ink-faint); font-weight: 500; transition: color .15s; }
+.cat-head-link:hover .cat-more-label { color: var(--ink); }
 
 /* ─── CARDS ─── */
 .cards {
@@ -251,17 +255,6 @@ body {
   box-shadow: 0 1px 6px rgba(0,0,0,.05);
 }
 .load-more .more-count { color: var(--ink-faint); font-weight: 400; }
-
-/* ─── CATEGORY MORE BUTTON ─── */
-.cat-more { margin-top: 14px; text-align: right; }
-.cat-more-btn {
-  font-family: 'Inter', sans-serif;
-  font-size: 12.5px; font-weight: 500; letter-spacing: -.01em;
-  color: var(--ink-soft); background: none; border: none;
-  cursor: pointer; padding: 4px 0;
-  transition: color .15s;
-}
-.cat-more-btn:hover { color: var(--ink); }
 
 /* ─── HERO LAYOUT ─── */
 .cat-hero {
@@ -635,6 +628,7 @@ footer {
 
 <div class="catnav" id="catnav">
   <button class="active" data-cat="all"><span class="sw" style="background:var(--ink)"></span>TOP</button>
+  <button id="today-btn" data-cat="today"><span class="sw" style="background:var(--ink)"></span>TODAY</button>
   <button data-cat="interior"><span class="sw" style="background:var(--c-interior)"></span>INTERIOR</button>
   <button data-cat="design"><span class="sw" style="background:var(--c-design)"></span>DESIGN</button>
   <button data-cat="art"><span class="sw" style="background:var(--c-art)"></span>ART</button>
@@ -780,6 +774,7 @@ let currentFilter = 'all';
 let currentMedia  = 'all';
 let currentSearch = '';
 let currentSource = '';
+let currentToday  = false;
 const PAGE_SIZE   = 24;
 let visibleCount  = PAGE_SIZE;
 
@@ -864,13 +859,29 @@ function buildSubCard(item, accent) {
   return a;
 }
 
-function renderNewSection(container, items) {
+function getNewSectionItems(data) {
+  const sixHoursAgo = Date.now() - 6 * 60 * 60 * 1000;
+  const recent = data.filter(d => {
+    if (!d.rawDate) return false;
+    const t = new Date(d.rawDate.length === 10
+      ? d.rawDate + 'T00:00:00+09:00'
+      : d.rawDate
+    ).getTime();
+    return t >= sixHoursAgo;
+  });
+  if (recent.length >= 3) return { items: recent, fallback: false };
+  return { items: data.slice(0, 10), fallback: true };
+}
+
+function renderNewSection(container, items, fallback) {
   const sec = document.createElement('div');
   sec.className = 'new-section';
+  const newHeadContent = fallback
+    ? `<span class="new-label">NEW</span><span>最新10件</span>`
+    : `<span class="new-label">NEW</span><span>過去6時間の新着 ${items.length}件</span>`;
   sec.innerHTML = `
     <div class="new-head">
-      <span class="new-label">NEW</span>
-      <span>最新 ${items.length} 件</span>
+      ${newHeadContent}
       <div class="new-controls">
         <button class="new-btn" id="new-prev" aria-label="前へ">‹</button>
         <button class="new-btn" id="new-next" aria-label="次へ">›</button>
@@ -908,21 +919,30 @@ function renderNewSection(container, items) {
   container.appendChild(sec);
 }
 
-// showMoreBtn: true のとき「もっと見る」ボタンを追加、totalCount は見出しに表示する件数
 function renderSection(container, key, items, showMoreBtn = false, totalCount = null) {
-  const cfg   = CATS[key];
-  const count = totalCount ?? items.length;
-  const sec   = document.createElement('div');
+  const cfg = CATS[key];
+  const sec = document.createElement('div');
   sec.className = 'cat-section';
-  sec.innerHTML = `
-    <div class="cat-head">
-      <div class="left">
-        <span class="sw" style="background:${cfg.accent}"></span>
-        <h2>${cfg.label}</h2>
-      </div>
-      <span class="count">${count}</span>
+
+  const head = document.createElement('div');
+  head.className = showMoreBtn ? 'cat-head cat-head-link' : 'cat-head';
+  head.innerHTML = `
+    <div class="left">
+      <span class="sw" style="background:${cfg.accent}"></span>
+      <h2>${cfg.label}</h2>
     </div>
+    ${showMoreBtn ? '<span class="cat-more-label">もっと見る →</span>' : ''}
   `;
+  if (showMoreBtn) {
+    head.addEventListener('click', () => {
+      document.querySelectorAll('#catnav button:not([data-cat="today"])').forEach(b => b.classList.remove('active'));
+      document.querySelector(`#catnav [data-cat="${key}"]`)?.classList.add('active');
+      currentFilter = key;
+      visibleCount  = PAGE_SIZE;
+      render();
+    });
+  }
+  sec.appendChild(head);
   container.appendChild(sec);
 
   if (showMoreBtn) {
@@ -983,19 +1003,6 @@ function renderSection(container, key, items, showMoreBtn = false, totalCount = 
     sec.appendChild(grid);
   }
 
-  if (showMoreBtn) {
-    const moreDiv = document.createElement('div');
-    moreDiv.className = 'cat-more';
-    moreDiv.innerHTML = `<button class="cat-more-btn" data-cat="${key}">もっと見る（${cfg.label}）→</button>`;
-    sec.appendChild(moreDiv);
-    moreDiv.querySelector('.cat-more-btn').onclick = () => {
-      document.querySelectorAll('#catnav button').forEach(b => b.classList.remove('active'));
-      document.querySelector(`#catnav [data-cat="${key}"]`)?.classList.add('active');
-      currentFilter = key;
-      visibleCount  = PAGE_SIZE;
-      render();
-    };
-  }
 }
 
 function render() {
@@ -1020,10 +1027,26 @@ function render() {
     ? mediaFiltered.filter(d => d.source === currentSource)
     : mediaFiltered;
 
+  const todayStr = (() => {
+    const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    return jst.getUTCFullYear() + '-'
+      + String(jst.getUTCMonth() + 1).padStart(2, '0') + '-'
+      + String(jst.getUTCDate()).padStart(2, '0');
+  })();
+  const baseFiltered = currentToday
+    ? sourceFiltered.filter(d => d.rawDate && d.rawDate.startsWith(todayStr))
+    : sourceFiltered;
+
+  if (currentToday && baseFiltered.length === 0) {
+    feed.innerHTML = `<div class="cat-section"><div class="cards"><div class="empty">今日の新着はまだありません</div></div></div>`;
+    document.getElementById('total-count').textContent = `0 articles`;
+    return;
+  }
+
   // ── 検索モード ──
   if (currentSearch) {
     const q = currentSearch.toLowerCase();
-    let results = sourceFiltered.filter(d =>
+    let results = baseFiltered.filter(d =>
       d.title.toLowerCase().includes(q) ||
       d.excerpt.toLowerCase().includes(q) ||
       d.source.toLowerCase().includes(q)
@@ -1062,9 +1085,9 @@ function render() {
   if (currentFilter === 'all') {
     // ── すべて表示: NEWセクション + カテゴリごとに最新3件 + 「もっと見る」ボタン ──
     if (!currentSource) {
-      const newItems = sourceFiltered.slice(0, 10);
+      const { items: newItems, fallback: newFallback } = getNewSectionItems(baseFiltered);
       if (newItems.length > 0) {
-        renderNewSection(feed, newItems);
+        renderNewSection(feed, newItems, newFallback);
         document.getElementById('new-prev')?.addEventListener('click', () => {
           document.getElementById('new-scroll').scrollBy({ left: -700, behavior: 'smooth' });
         });
@@ -1075,7 +1098,7 @@ function render() {
     }
     let hasAny = false;
     CAT_ORDER.forEach(key => {
-      const catItems = sourceFiltered.filter(d => d.category === key);
+      const catItems = baseFiltered.filter(d => d.category === key);
       if (catItems.length === 0) return;
       hasAny = true;
       renderSection(feed, key, catItems.slice(0, 3), true, catItems.length);
@@ -1085,7 +1108,7 @@ function render() {
     }
   } else {
     // ── 単一カテゴリ: ページネーション付き全件表示 ──
-    const filtered = sourceFiltered.filter(d => d.category === currentFilter);
+    const filtered = baseFiltered.filter(d => d.category === currentFilter);
     const visible   = filtered.slice(0, visibleCount);
 
     if (visible.length === 0) {
@@ -1117,6 +1140,7 @@ document.getElementById('logo-link').addEventListener('click', e => {
   currentMedia  = 'all';
   currentSource = '';
   currentSearch = '';
+  currentToday  = false;
   visibleCount  = PAGE_SIZE;
   document.querySelectorAll('#catnav button').forEach(b => b.classList.remove('active'));
   document.querySelector('#catnav [data-cat="all"]').classList.add('active');
@@ -1130,10 +1154,19 @@ document.getElementById('logo-link').addEventListener('click', e => {
 // ─── カテゴリナビ ─────────────────────────────────────────────────────────────
 document.querySelectorAll('#catnav button').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('#catnav button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.cat;
-    visibleCount  = PAGE_SIZE;  // ページリセット
+    if (btn.dataset.cat === 'today') {
+      currentToday = !currentToday;
+      btn.classList.toggle('active', currentToday);
+    } else {
+      document.querySelectorAll('#catnav button:not([data-cat="today"])').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.cat;
+      if (btn.dataset.cat === 'all') {
+        currentToday = false;
+        document.getElementById('today-btn').classList.remove('active');
+      }
+    }
+    visibleCount = PAGE_SIZE;
     render();
   });
 });
