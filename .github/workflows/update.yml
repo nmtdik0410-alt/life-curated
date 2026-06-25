@@ -2,10 +2,9 @@ name: Update Feed
 
 on:
   schedule:
-    # 毎日 UTC 0:00 = 日本時間 9:00 に実行
-    - cron: '0 0 * * *'
+    - cron: '0 * * * *'   # 毎時実行（新着のみ・quickモード）
+    - cron: '0 15 * * *'  # 毎日0時JST（フル実行・UTC15時=JST0時）
   workflow_dispatch:
-    # GitHub の Actions タブから手動実行も可能
 
 permissions:
   contents: write
@@ -34,7 +33,12 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
-        run: python scraper.py
+        run: |
+          if [ "${{ github.event.schedule }}" = "0 * * * *" ]; then
+            python3 scraper.py --quick
+          else
+            python3 scraper.py --full
+          fi
 
       - name: Write timestamp (JST)
         run: TZ=Asia/Tokyo date +'%m.%d %H:%M' > last_updated.txt
@@ -47,6 +51,6 @@ jobs:
           git add life_curated_feed.csv 2>/dev/null || true
           # last_updated.txtは毎回内容が変わるため常にコミット対象
           git add last_updated.txt
-          git commit -m "chore: update feed $(TZ=Asia/Tokyo date +'%Y-%m-%d')"
+          git commit -m "chore: update feed $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M')"
           git pull --rebase origin main || true
           git push --force-with-lease

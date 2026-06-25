@@ -1384,5 +1384,116 @@ def main():
     return existing
 
 
+def quick_main():
+    errors     = []
+    new_normal = []
+
+    print('=' * 60)
+    print('  LIFE CURATED scraper.py  記事収集開始（クイックモード）')
+    print(f'  対象: {len(MEDIA_LIST)} 媒体（Webのみ・最新{MAX_ARTICLES}件）')
+    print(f'  出力: {OUTPUT_CSV}')
+    print('=' * 60)
+
+    existing   = load_existing_csv()
+    exist_urls = {a['url'] for a in existing}
+    print(f'\n既存件数: {len(existing)} 件')
+
+    # ─── 通常取得（最新5件・OGP取得・Claude API分類） ────────────
+    print(f'\n{"─" * 60}')
+    print(f'  通常取得（各最大 {MAX_ARTICLES} 件 / Claude API分類）')
+    print(f'{"─" * 60}')
+
+    for media in MEDIA_LIST:
+        source = media['source']
+        print(f'\n[{source}] ({media["category"]}) 取得中...')
+        try:
+            articles = []
+            method   = ''
+
+            articles, used_rss = fetch_via_rss(media, backfill=False)
+            if articles:
+                method = f'RSS: {used_rss}'
+                print(f'  RSS 成功 ({len(articles)} 件)')
+            else:
+                print('  RSS 失敗 → HTML スクレイピング')
+                articles = fetch_via_html(media, backfill=False)
+                method   = 'HTML scraping'
+                if articles:
+                    print(f'  HTML 成功 ({len(articles)} 件)')
+                else:
+                    raise ValueError('記事が 1 件も取得できませんでした')
+
+            print('  OGP 画像取得中...')
+            for article in articles:
+                try:
+                    if article['url'] and not article.get('thumbnail'):
+                        image, tags = get_ogp_data(article['url'])
+                        article['thumbnail'] = image
+                        article['tags'] = ', '.join(tags)
+                    else:
+                        article.setdefault('tags', '')
+                except Exception:
+                    article['thumbnail'] = ''
+                    article['tags'] = ''
+                status = '✓' if article.get('thumbnail') else '–'
+                print(f'    [{status}] {article["title"][:45]}')
+
+            claude_cats = classify_with_claude_batch(articles)
+            if claude_cats:
+                print(f'  Claude 分類: {" / ".join(c or "?" for c in claude_cats)}')
+            for i, article in enumerate(articles):
+                if claude_cats and i < len(claude_cats) and claude_cats[i]:
+                    article['category'] = claude_cats[i]
+                else:
+                    article['category'] = classify_category(article['title'], article.get('excerpt', ''))
+            new_normal.extend(articles)
+
+        except Exception as e:
+            msg = f'[{source}] {method or "取得"} エラー: {e}'
+            print(f'  ✗ {msg}')
+            errors.append(msg)
+
+    # ─── マージ・ソート・CSV保存 ──────────────────────────────────
+    added   = 0
+    skipped = 0
+    for article in new_normal:
+        url = article.get('url', '')
+        if not url or url in exist_urls:
+            skipped += 1
+            continue
+        existing.append(article)
+        exist_urls.add(url)
+        added += 1
+
+    existing.sort(key=lambda a: a.get('date') or '', reverse=True)
+
+    with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8-sig') as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction='ignore', restval='')
+        writer.writeheader()
+        writer.writerows(existing)
+
+    print('\n' + '=' * 60)
+    print(f'  新規追加:     {added} 件')
+    print(f'  重複スキップ: {skipped} 件')
+    print(f'  合計件数:     {len(existing)} 件 → {OUTPUT_CSV}')
+
+    if errors:
+        with open(ERROR_LOG, 'w', encoding='utf-8') as f:
+            f.write('LIFE CURATED エラーログ\n')
+            f.write(f'実行日時: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
+            f.write('=' * 60 + '\n')
+            for err in errors:
+                f.write(err + '\n')
+        print(f'  エラー: {len(errors)} 件 → {ERROR_LOG}')
+    else:
+        print('  エラーなし')
+
+    print('=' * 60)
+    return existing
+
+
 if __name__ == '__main__':
-    main()
+    if '--quick' in sys.argv:
+        quick_main()
+    else:
+        main()
